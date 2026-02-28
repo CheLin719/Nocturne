@@ -110,9 +110,9 @@ const WORLDS = [
     ],
 
     video: {
-      src: '',      // ← 填视频 URL
-      type: 'mp4',  // 'mp4' 或 'iframe'（B站/YouTube embed）
-      title: '幽光之境 · 手书',
+      src: 'video/过学习手书.mp4',
+      type: 'mp4',
+      title: '过学习 · 手书',
       date: '2025',
     },
 
