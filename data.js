@@ -75,7 +75,7 @@ const TRACKS = [
 const WORLDS = [
   {
     id: 'w1',
-    name: '夜乱主线',
+    name: '夜乱',
     nameEn: 'RIFT OF PALE LIGHT',
     idx: '01',
     tagline: '在星光裂缝之间生长的世界',
@@ -102,11 +102,11 @@ const WORLDS = [
     ],
 
     gallery: [
-      '',  // ← 填图片 URL，第一张会显示为大图
-      '',
-      '',
-      '',
-      '',
+      'images/吵架.JPEG',  // ← 填图片 URL，第一张会显示为大图
+      'images/酒吧门口.JPG',
+      'images/酒吧门口2.JPG',
+      'images/抱抱.JPEG',
+      'images/家里.JPEG',
     ],
 
     video: {
