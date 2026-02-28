@@ -75,7 +75,7 @@ const TRACKS = [
 const WORLDS = [
   {
     id: 'w1',
-    name: '催眠麦克风',
+    name: '夜乱主线',
     nameEn: 'RIFT OF PALE LIGHT',
     idx: '01',
     tagline: '在星光裂缝之间生长的世界',
@@ -84,20 +84,18 @@ const WORLDS = [
 
     chars: [
       {
-        name: '赛博朋克',
-        nameEn: 'ZHÚYÈ',
-        alias: 'PALE LIGHT GUIDE',
-        tags: ['神秘', '温柔', '孤独', '星灵'],
-        bio: '他从不告诉任何人自己的来历，只是在最黑的夜里出现，带着一盏不会熄灭的灯。据说只要你在裂缝边哭泣，就能听见他轻轻呼唤你的名字。',
-        portrait: '',  // ← 填立绘图 URL
+        name: '夜桜悠葉',
+        alias: 'Yoen',
+        tags: ['“酒吧老板”', '杀手'],
+        bio: '经营着一家清吧，每天看起来无所事事',
+        portrait: 'images/夜立绘.JPG',  // ← 填立绘图 URL
         flip: false,
       },
       {
-        name: '福瑞',
-        nameEn: 'XĪNGLÈI',
-        alias: 'RIFT OBSERVER',
-        tags: ['好奇', '敏感', '勇敢', '人类'],
-        bio: '从出生起就能看见别人看不见的光，被村民称为"怪孩子"。直到某个裂缝颤抖的夜晚，她捡起了第一滴星泪。',
+        name: '饴村乱数',
+        alias: 'Easy R',
+        tags: ['时尚设计师', 'fling posse队长'],
+        bio: '职业是时尚设计师，表面天真浪漫，给人的印象是非常开朗、轻浮和幼稚，在任何情况下都喜欢寻求乐趣的一个人，是个经常活跃现场气氛的角色。实则城府极深，真正的性格比较沉稳在玩世不恭、斤斤计较和虚无主义。',
         portrait: '',  // ← 填立绘图 URL
         flip: true,
       },
