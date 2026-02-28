@@ -75,16 +75,16 @@ const TRACKS = [
 const WORLDS = [
   {
     id: 'w1',
-    name: '幽光之境',
+    name: '催眠麦克风',
     nameEn: 'RIFT OF PALE LIGHT',
     idx: '01',
     tagline: '在星光裂缝之间生长的世界',
     desc: '魔法从情感中诞生，眼泪能点亮黑暗。每一个梦境都是真实存在的地方。',
-    cover: '',  // ← 填 16:9 封面图 URL
+    cover: 'images/涩谷街头.JPEG', // ← 填 16:9 封面图 URL
 
     chars: [
       {
-        name: '烛夜',
+        name: '赛博朋克',
         nameEn: 'ZHÚYÈ',
         alias: 'PALE LIGHT GUIDE',
         tags: ['神秘', '温柔', '孤独', '星灵'],
@@ -93,7 +93,7 @@ const WORLDS = [
         flip: false,
       },
       {
-        name: '星泪',
+        name: '福瑞',
         nameEn: 'XĪNGLÈI',
         alias: 'RIFT OBSERVER',
         tags: ['好奇', '敏感', '勇敢', '人类'],
