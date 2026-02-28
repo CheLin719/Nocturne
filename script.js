@@ -302,6 +302,10 @@ function autoR(el) {
 }
 
 async function doChat() {
+  if (!API_KEY) {
+    addMsg('ai', '⚠ 请在 data.js 顶部填入 API_KEY 后重新打开页面。');
+    return;
+  }
   const inp = document.getElementById('d-input');
   const txt = inp.value.trim();
   if (!txt) return;
@@ -325,33 +329,34 @@ async function doChat() {
   msgs.scrollTop = msgs.scrollHeight;
 
   try {
-    // ← 本地开发用 localhost:3000，部署后换成你的服务器地址
-    const BACKEND = 'http://localhost:3000';
-
-    const res = await fetch(`${BACKEND}/api/chat`, {
+    const base = (API_PROXY || 'https://api.anthropic.com').replace(/\/$/, '');
+    const res  = await fetch(`${base}/v1/messages`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
       body: JSON.stringify({
-        message:      txt,
-        history:      chatHistMap[key].slice(0, -1),
-        systemPrompt: curWorld.chat.systems[activeChatChar] || curWorld.chat.systems[0],
-        charName:     curWorld.chars[activeChatChar].name,
-        worldId:      curWorld.id + '_' + activeChatChar,
+        model:      API_MODEL,
+        max_tokens: 400,
+        system:     curWorld.chat.systems[activeChatChar] || curWorld.chat.systems[0],
+        messages:   chatHistMap[key],
       }),
     });
-
     const data = await res.json();
     tEl.remove();
-
-    if (data.reply) {
-      chatHistMap[key].push({ role: 'model', content: data.reply });
-      addMsg('ai', data.reply);
+    if (data.content?.[0]?.text) {
+      const rep = data.content[0].text;
+      chatHistMap[key].push({ role: 'assistant', content: rep });
+      addMsg('ai', rep);
     } else {
-      addMsg('ai', `⚠ ${data.error || '后端返回未知错误'}`);
+      addMsg('ai', `Error: ${data.error?.message || JSON.stringify(data)}`);
     }
   } catch(e) {
     tEl.remove();
-    addMsg('ai', `⚠ 无法连接后端：${e.message}\n请确认 server.js 正在运行。`);
+    addMsg('ai', `Network error: ${e.message}`);
   }
   btn.disabled = false;
 }
