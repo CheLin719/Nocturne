@@ -239,12 +239,12 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
 .portrait-ph .pht{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.15em;}
 .char-name{
   font-family:'Cormorant Garamond',serif;
-  font-size:1.4rem;font-weight:300;letter-spacing:.08em;color:#ddd;margin-bottom:3px;
+  font-size:1.4rem;font-weight:300;letter-spacing:.08em;color:#fff;margin-bottom:3px;
 }
-.char-name-en{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.15em;color:#2a2a2a;margin-bottom:12px;}
+.char-name-en{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.15em;color:#888;margin-bottom:12px;}
 .char-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
-.char-tag{font-size:.62rem;padding:2px 8px;border:1px solid rgba(255,255,255,.08);color:#444;letter-spacing:.05em;}
-.char-bio{font-size:.78rem;line-height:2.1;color:#444;}
+.char-tag{font-size:.62rem;padding:2px 8px;border:1px solid rgba(255,255,255,.2);color:#bbb;letter-spacing:.05em;}
+.char-bio{font-size:.78rem;line-height:2.1;color:#aaa;}
 
 .gal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
 .gi{
