@@ -110,9 +110,9 @@ const WORLDS = [
     ],
 
     video: {
-      src: 'video/过学习手书.mp4',
-      type: 'mp4',
-      title: '过学习 · 手书',
+      src: 'https://player.bilibili.com/player.html?bvid=BV1uxw1e6EEz',
+      type: 'iframe',
+      title: '濄学习 · 手书',
       date: '2025',
     },
 
