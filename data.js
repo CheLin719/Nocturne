@@ -96,7 +96,7 @@ const WORLDS = [
         alias: 'Easy R',
         tags: ['时尚设计师', 'fling posse队长'],
         bio: '职业是时尚设计师，表面天真浪漫，给人的印象是非常开朗、轻浮和幼稚，在任何情况下都喜欢寻求乐趣的一个人，是个经常活跃现场气氛的角色。实则城府极深，真正的性格比较沉稳在玩世不恭、斤斤计较和虚无主义。',
-        portrait: '',  // ← 填立绘图 URL
+        portrait: 'images/乱数fla2.JPG',  // ← 填立绘图 URL
         flip: true,
       },
     ],
