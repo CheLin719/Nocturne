@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nocturne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+SC:wght@300;400;600&family=Space+Mono:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ════════ HOME ════════ -->
+<div id="home" class="page active">
+  <div class="home-bar">
+    <div class="logo">Nocturne</div>
+    <div class="logo-sub">My Worlds · My Stories</div>
+  </div>
+
+  <div class="slider-area">
+    <div class="world-name-display">
+      <div class="wnd-idx" id="wnd-idx">—</div>
+      <div class="wnd-name" id="wnd-name">—</div>
+      <div class="wnd-en" id="wnd-en">—</div>
+    </div>
+
+    <div class="carousel-outer">
+      <button class="carr-btn carr-prev" onclick="slide(-1)">←</button>
+      <div class="carousel-viewport">
+        <div class="carousel-track-clip">
+          <div class="carousel-track" id="track"></div>
+        </div>
+      </div>
+      <button class="carr-btn carr-next" onclick="slide(1)">→</button>
+    </div>
+
+    <div class="slider-dots" id="dots"></div>
+  </div>
+
+  <div class="home-footer">Click to enter world</div>
+</div>
+
+<!-- ════════ DETAIL ════════ -->
+<div id="detail" class="page">
+
+  <div class="detail-topbar">
+    <button class="back-btn" onclick="goHome()">← Nocturne</button>
+    <div class="topbar-name" id="d-topname"></div>
+    <div class="topbar-num" id="d-topnum"></div>
+  </div>
+
+  <!-- 角色 + 画廊 -->
+  <div class="d-sec" id="sec-cg">
+    <div class="sec-lbl">CHARACTER · GALLERY</div>
+    <div class="cg-grid">
+      <div class="char-stack" id="d-chars"></div>
+      <div class="gal-grid" id="d-gallery"></div>
+    </div>
+  </div>
+
+  <!-- 视频 + 小说 -->
+  <div class="d-sec" id="sec-vn">
+    <div class="sec-lbl">HANDWRITING · NOVEL</div>
+    <div class="vn-grid">
+
+      <div class="vid-wrap">
+        <div class="vid-frame" id="d-vframe">
+          <div class="vid-ph"><div class="vi">▷</div><p>VIDEO<br>PLACEHOLDER</p></div>
+        </div>
+        <div class="vid-info">
+          <span class="v-t" id="d-vtitle">手书</span>
+          <span class="v-d" id="d-vdate">—</span>
+        </div>
+      </div>
+
+      <div class="nv-wrap">
+        <div class="nv-head">
+          <span class="nv-title" id="d-nvtitle">—</span>
+          <span class="nv-pg" id="d-nvpg">01 / 01</span>
+        </div>
+        <div class="nv-body" id="d-nvbody"></div>
+        <div class="nv-foot">
+          <button class="nvbtn" id="nvprev" onclick="nvFlip(-1)">← PREV</button>
+          <div class="nv-dots" id="nvdots"></div>
+          <button class="nvbtn" id="nvnext" onclick="nvFlip(1)">NEXT →</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 对话 -->
+  <div class="d-sec" id="sec-chat">
+    <div class="sec-lbl">DIALOGUE</div>
+    <div class="chat-wrap">
+
+      <!-- 角色切换 tab（有2个角色时自动显示） -->
+      <div class="chat-tabs" id="d-ctabs"></div>
+
+      <div class="chat-box">
+        <div class="chat-hd">
+          <div class="chat-av" id="d-cav">—</div>
+          <div>
+            <div class="chat-cn" id="d-cname">—</div>
+            <div class="chat-cr" id="d-crole">—</div>
+          </div>
+          <div class="chat-ol">ONLINE</div>
+        </div>
+        <div class="chat-msgs" id="d-msgs"></div>
+        <div class="chat-input-row">
+          <textarea class="chat-ta" id="d-input" rows="1"
+            placeholder="Say something…"
+            onkeydown="ckEnter(event)"
+            oninput="autoR(this)"></textarea>
+          <button class="chat-send" id="d-send" onclick="doChat()">↑</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="height:100px"></div>
+</div>
+
+<!-- ════════ MUSIC PLAYER ════════ -->
+<div id="mp">
+  <div class="mp-panel" id="mp-panel">
+    <div class="mp-tname" id="mp-tname">—</div>
+    <div class="mp-tart" id="mp-tart">—</div>
+    <div class="mp-prog" id="mp-prog" onclick="mpSeek(event)">
+      <div class="mp-fill" id="mp-fill"></div>
+    </div>
+    <div class="mp-ctrls">
+      <button class="mpb" onclick="mpPrev()">⏮</button>
+      <button class="mp-pp" id="mp-pp" onclick="mpToggle()">▶</button>
+      <button class="mpb" onclick="mpNext()">⏭</button>
+      <button class="mpb" onclick="mpTogglePl()">≡</button>
+    </div>
+    <div class="mp-list" id="mp-list">
+      <div id="pl-items"></div>
+    </div>
+  </div>
+  <button class="mp-fab" id="mp-fab" onclick="mpTogglePanel()">♪</button>
+</div>
+
+<!-- ════════ LIGHTBOX ════════ -->
+<div id="lb" onclick="lbClose()">
+  <button class="lb-x">✕</button>
+  <img id="lb-img" src="" alt="">
+</div>
+
+<audio id="aud"></audio>
+
+<!-- 加载顺序：先 data.js（内容），再 script.js（逻辑） -->
+<script src="data.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
