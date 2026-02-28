@@ -325,18 +325,18 @@ async function doChat() {
   msgs.scrollTop = msgs.scrollHeight;
 
   try {
-    // ← 后端地址：本地开发用 localhost:3000，部署后改成你的服务器地址
+    // ← 本地开发用 localhost:3000，部署后换成你的服务器地址
     const BACKEND = 'http://localhost:3000';
 
     const res = await fetch(`${BACKEND}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        message:    txt,
-        history:    chatHistMap[key].slice(0, -1), // 最新消息已单独传 message
+        message:      txt,
+        history:      chatHistMap[key].slice(0, -1),
         systemPrompt: curWorld.chat.systems[activeChatChar] || curWorld.chat.systems[0],
-        charName:   curWorld.chars[activeChatChar].name,
-        worldId:    curWorld.id + '_' + activeChatChar,
+        charName:     curWorld.chars[activeChatChar].name,
+        worldId:      curWorld.id + '_' + activeChatChar,
       }),
     });
 
@@ -347,11 +347,11 @@ async function doChat() {
       chatHistMap[key].push({ role: 'model', content: data.reply });
       addMsg('ai', data.reply);
     } else {
-      addMsg('ai', `⚠ ${data.error || '后端返回了未知错误'}`);
+      addMsg('ai', `⚠ ${data.error || '后端返回未知错误'}`);
     }
   } catch(e) {
     tEl.remove();
-    addMsg('ai', `⚠ 无法连接后端服务器：${e.message}\n请确认 server.js 正在运行。`);
+    addMsg('ai', `⚠ 无法连接后端：${e.message}\n请确认 server.js 正在运行。`);
   }
   btn.disabled = false;
 }
