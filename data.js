@@ -106,7 +106,7 @@ const WORLDS = [
       'images/酒吧门口.JPG',
       'images/酒吧门口2.JPG',
       'images/抱抱.JPEG',
-      'images/家里.JPEG',
+
     ],
 
     video: {
