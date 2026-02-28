@@ -110,7 +110,7 @@ const WORLDS = [
     ],
 
     video: {
-      src: 'https://player.bilibili.com/player.html?bvid=BV1uxw1e6EEz',
+      src: 'https://player.bilibili.com/player.html?bvid=BV1uxw1e6EEz&page=1&high_quality=1&danmaku=0',
       type: 'iframe',
       title: '濄学习 · 手书',
       date: '2025',
