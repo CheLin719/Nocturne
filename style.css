@@ -265,7 +265,7 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
 .gi-empty .gt{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.12em;}
 
 /* Video + Novel */
-.vn-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+.vn-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:stretch;}
 .vid-wrap{border:1px solid rgba(255,255,255,.06);background:#0d0d0d;}
 .vid-frame{
   aspect-ratio:16/9;background:#000;
@@ -279,14 +279,14 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
 .v-t{font-size:.78rem;color:#888;}
 .v-d{font-family:'Space Mono',monospace;font-size:.58rem;color:#282828;}
 
-.nv-wrap{border:1px solid rgba(255,255,255,.06);background:#0d0d0d;display:flex;flex-direction:column;min-height:300px;}
+.nv-wrap{border:1px solid rgba(255,255,255,.06);background:#0d0d0d;display:flex;flex-direction:column;height:100%;}
 .nv-head{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center;}
 .nv-title{font-size:.78rem;color:#888;}
 .nv-pg{font-family:'Space Mono',monospace;font-size:.56rem;color:#282828;}
-.nv-body{flex:1;position:relative;overflow:hidden;min-height:230px;}
+.nv-body{flex:1;position:relative;overflow:hidden;min-height:0;}
 .nv-page{
   position:absolute;inset:0;padding:22px 20px;
-  font-size:.8rem;line-height:2.2;color:#444;
+  font-size:.8rem;line-height:2.2;color:#ccc;
   opacity:0;transform:translateX(28px);
   transition:opacity .35s,transform .35s;
   pointer-events:none;overflow-y:auto;
