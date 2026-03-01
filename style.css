@@ -674,3 +674,67 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
   .bj-card{width:34px;height:50px;}
   .bj-chip{width:32px;height:32px;}
 }
+
+/* ══ 21点规则页 ══ */
+.bj-rules-page {
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; align-items: stretch;
+  background: #0a0a0a;
+}
+.bj-rules-char {
+  width: 160px; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; padding: 24px 12px;
+  border-right: 1px solid rgba(255,255,255,.06);
+  background: #080808;
+}
+.bj-rules-speech {
+  font-size: .65rem; color: #444; line-height: 1.7;
+  text-align: center; margin-top: 6px;
+  font-family: 'Noto Serif SC', serif;
+  letter-spacing: .04em;
+}
+.bj-rules-content {
+  flex: 1; display: flex; flex-direction: column;
+  padding: 28px 28px 20px; overflow-y: auto;
+}
+.bj-rules-title {
+  font-family: 'Space Mono', monospace;
+  font-size: .55rem; letter-spacing: .3em;
+  color: #333; margin-bottom: 20px;
+}
+.bj-rules-body {
+  flex: 1; display: flex; flex-direction: column; gap: 10px;
+}
+.bj-rule-item {
+  display: flex; gap: 14px; align-items: baseline;
+  border-bottom: 1px solid rgba(255,255,255,.03);
+  padding-bottom: 8px;
+}
+.bj-rule-key {
+  font-family: 'Space Mono', monospace;
+  font-size: .48rem; letter-spacing: .12em;
+  color: #444; flex-shrink: 0; width: 32px;
+}
+.bj-rule-val {
+  font-size: .7rem; color: #555;
+  line-height: 1.5; font-weight: 300;
+  font-family: 'Noto Serif SC', serif;
+}
+.bj-ack-btn {
+  margin-top: 20px; align-self: flex-end;
+  font-family: 'Space Mono', monospace;
+  font-size: .52rem; letter-spacing: .15em;
+  padding: 10px 22px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: transparent; color: #666;
+  cursor: pointer; transition: all .2s;
+}
+.bj-ack-btn:hover { color: #ddd; border-color: rgba(255,255,255,.35); background: rgba(255,255,255,.04); }
+
+/* 游戏页包裹层 */
+.bj-game-page {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+}

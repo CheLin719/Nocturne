@@ -139,23 +139,43 @@
     <!-- 关闭 -->
     <button class="bj-x" onclick="bjClose()">✕</button>
 
-    <!-- 赌桌主体 -->
+    <!-- ══ 规则页 ══ -->
+    <div class="bj-rules-page" id="bj-rules-page">
+      <div class="bj-rules-char">
+        <div class="bj-char-av" id="bj-char-av">—</div>
+        <div class="bj-char-nm" id="bj-char-nm">—</div>
+        <div class="bj-rules-speech" id="bj-rules-speech">……</div>
+      </div>
+      <div class="bj-rules-content">
+        <div class="bj-rules-title">RULES · 规则</div>
+        <div class="bj-rules-body">
+          <div class="bj-rule-item"><span class="bj-rule-key">目标</span><span class="bj-rule-val">手牌点数尽量接近 21，超过即爆牌</span></div>
+          <div class="bj-rule-item"><span class="bj-rule-key">牌值</span><span class="bj-rule-val">A = 1 或 11　　J/Q/K = 10　　其余按面值</span></div>
+          <div class="bj-rule-item"><span class="bj-rule-key">发牌</span><span class="bj-rule-val">先下注，再发两张牌，庄家一张暗</span></div>
+          <div class="bj-rule-item"><span class="bj-rule-key">要牌</span><span class="bj-rule-val">HIT 继续拿牌，STAND 停牌等庄家亮牌</span></div>
+          <div class="bj-rule-item"><span class="bj-rule-key">双倍</span><span class="bj-rule-val">DOUBLE 下注翻倍，只再拿一张牌</span></div>
+          <div class="bj-rule-item"><span class="bj-rule-key">分牌</span><span class="bj-rule-val">两张相同时可 SPLIT 分成两手</span></div>
+          <div class="bj-rule-item"><span class="bj-rule-key">保险</span><span class="bj-rule-val">庄家明牌为 A 时可买 INSURANCE</span></div>
+          <div class="bj-rule-item"><span class="bj-rule-key">庄家</span><span class="bj-rule-val">点数不足 17 必须补牌，17 及以上停牌</span></div>
+          <div class="bj-rule-item"><span class="bj-rule-key">21点</span><span class="bj-rule-val">初始两张即 21 点，赔付 1.5 倍</span></div>
+        </div>
+        <button class="bj-ack-btn" onclick="bjAckRules()">我知道了，开始游戏 →</button>
+      </div>
+    </div>
+
+    <!-- ══ 游戏页 ══ -->
+    <div class="bj-game-page" id="bj-game-page" style="display:none">
     <div class="bj-table">
 
       <!-- ── 庄家区 ── -->
       <div class="bj-dealer-zone">
-        <!-- 立绘区（后期放图） -->
         <div class="bj-char-portrait" id="bj-char-portrait">
-          <div class="bj-char-placeholder" id="bj-char-placeholder">
-            <div class="bj-char-av" id="bj-char-av">—</div>
-            <div class="bj-char-nm" id="bj-char-nm">—</div>
+          <div class="bj-char-placeholder" id="bj-char-placeholder2">
+            <div class="bj-char-av" id="bj-char-av2">—</div>
+            <div class="bj-char-nm" id="bj-char-nm2">—</div>
           </div>
         </div>
-        <!-- 庄家台词 -->
-        <div class="bj-speech" id="bj-speech">
-          <span id="bj-speech-text">—</span>
-        </div>
-        <!-- 庄家牌 -->
+        <div class="bj-speech"><span id="bj-speech-text">—</span></div>
         <div class="bj-hand-label">庄家 <span class="bj-score" id="bj-dealer-score"></span></div>
         <div class="bj-hand" id="bj-dealer-hand"></div>
       </div>
@@ -163,48 +183,40 @@
       <!-- ── 桌面中线 ── -->
       <div class="bj-felt-mid">
         <div class="bj-deck-area">
-          <div class="bj-deck" id="bj-deck">
+          <div class="bj-deck">
             <div class="bj-deck-card"></div>
             <div class="bj-deck-card"></div>
             <div class="bj-deck-card"></div>
           </div>
           <div class="bj-deck-label">DECK</div>
         </div>
-        <div class="bj-result-area">
-          <div class="bj-result" id="bj-result"></div>
-        </div>
-        <!-- 筹码下注区 -->
-        <div class="bj-bet-display">
-          BET <span id="bj-bet-val">0</span> &nbsp;|&nbsp; CHIPS <span id="bj-chips-val">1000</span>
-        </div>
+        <div class="bj-result-area"><div class="bj-result" id="bj-result"></div></div>
+        <div class="bj-bet-display">BET <span id="bj-bet-val">0</span> &nbsp;|&nbsp; CHIPS <span id="bj-chips-val">1000</span></div>
       </div>
 
       <!-- ── 玩家区 ── -->
       <div class="bj-player-zone">
         <div class="bj-hand" id="bj-player-hand"></div>
         <div class="bj-hand-label">你 <span class="bj-score" id="bj-player-score"></span></div>
-
-        <!-- 筹码选择 -->
-        <div class="bj-chips" id="bj-chips">
+        <div class="bj-chips">
           <button class="bj-chip c5"   onclick="bjBet(5)">5</button>
           <button class="bj-chip c25"  onclick="bjBet(25)">25</button>
           <button class="bj-chip c50"  onclick="bjBet(50)">50</button>
           <button class="bj-chip c100" onclick="bjBet(100)">100</button>
           <button class="bj-chip c500" onclick="bjBet(500)">500</button>
         </div>
-
-        <!-- 操作按钮 -->
-        <div class="bj-actions" id="bj-actions">
-          <button class="bj-btn" id="bj-deal-btn"     onclick="bjDeal()">发牌 DEAL</button>
-          <button class="bj-btn" id="bj-hit-btn"      onclick="bjHit()"   style="display:none">要牌 HIT</button>
-          <button class="bj-btn" id="bj-stand-btn"    onclick="bjStand()" style="display:none">停牌 STAND</button>
-          <button class="bj-btn" id="bj-double-btn"   onclick="bjDouble()" style="display:none">双倍 DOUBLE</button>
-          <button class="bj-btn" id="bj-split-btn"    onclick="bjSplit()"  style="display:none">分牌 SPLIT</button>
-          <button class="bj-btn" id="bj-insure-btn"   onclick="bjInsure()" style="display:none">保险 INSURANCE</button>
+        <div class="bj-actions">
+          <button class="bj-btn" id="bj-deal-btn"   onclick="bjDeal()">发牌 DEAL</button>
+          <button class="bj-btn" id="bj-hit-btn"    onclick="bjHit()"    style="display:none">要牌 HIT</button>
+          <button class="bj-btn" id="bj-stand-btn"  onclick="bjStand()"  style="display:none">停牌 STAND</button>
+          <button class="bj-btn" id="bj-double-btn" onclick="bjDouble()" style="display:none">双倍 DOUBLE</button>
+          <button class="bj-btn" id="bj-split-btn"  onclick="bjSplit()"  style="display:none">分牌 SPLIT</button>
+          <button class="bj-btn" id="bj-insure-btn" onclick="bjInsure()" style="display:none">保险 INSURANCE</button>
           <button class="bj-btn bj-btn-new" id="bj-new-btn" onclick="bjNewRound()" style="display:none">新一局 NEW ROUND</button>
         </div>
       </div>
 
+    </div>
     </div>
   </div>
 </div>
