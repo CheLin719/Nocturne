@@ -146,7 +146,13 @@ function loadDetail(w) {
   document.getElementById('d-vdate').textContent  = vid.date  || '—';
   if (vid.src) {
     vf.innerHTML = vid.type === 'iframe'
-      ? `<iframe src="${vid.src}" frameborder="0" allowfullscreen></iframe>`
+      ? (() => {
+          // B站链接自动加 autoplay=0 防止自动播放
+          const iframeSrc = vid.src.includes('bilibili.com')
+            ? vid.src.replace(/([?&])autoplay=1/g, '$1autoplay=0') + (vid.src.includes('?') ? '&autoplay=0' : '?autoplay=0')
+            : vid.src;
+          return `<iframe src="${iframeSrc.replace('?autoplay=0&autoplay=0','?autoplay=0')}" frameborder="0" allowfullscreen allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" style="width:100%;height:100%;border:none;display:block;"></iframe>`;
+        })()
       : `<video controls preload="metadata" style="width:100%;height:100%;display:block"><source src="${vid.src}"></video>`;
   } else {
     vf.innerHTML = `<div class="vid-ph"><div class="vi">▷</div><p>VIDEO<br>PLACEHOLDER</p></div>`;
@@ -303,7 +309,7 @@ function autoR(el) {
 
 async function doChat() {
   if (!API_KEY) {
-    addMsg('ai', '⚠ 请在 data.js 顶部填入 API_KEY。');
+    addMsg('ai', '⚠ 请在 data.js 顶部填入 API_KEY 后重新打开页面。');
     return;
   }
   const inp = document.getElementById('d-input');
@@ -312,17 +318,11 @@ async function doChat() {
 
   inp.value = ''; inp.style.height = 'auto';
 
-  // 每个角色独立的对话历史 key
   const key = curWorld.id + '_' + activeChatChar;
   if (!chatHistMap[key]) chatHistMap[key] = [];
 
   addMsg('user', txt);
-
-  // OpenAI 兼容格式：role 用 'user'/'assistant'
   chatHistMap[key].push({ role: 'user', content: txt });
-
-  // 超过 40 条（20轮）删最旧一轮
-  while (chatHistMap[key].length > 40) chatHistMap[key].splice(0, 2);
 
   const btn  = document.getElementById('d-send');
   const msgs = document.getElementById('d-msgs');
@@ -335,51 +335,37 @@ async function doChat() {
   msgs.scrollTop = msgs.scrollHeight;
 
   try {
-    // OpenAI 兼容格式：反代地址 + /v1/chat/completions
-    const base = (API_PROXY || 'https://api.openai.com').replace(/\/$/, '');
-    const url  = `${base}/v1/chat/completions`;
-
-    const systemPrompt = curWorld.chat.systems[activeChatChar] || curWorld.chat.systems[0];
-
-    // system prompt 放在 messages 最前面，保证角色人设始终有效
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      ...chatHistMap[key],
-    ];
-
-    const res = await fetch(url, {
+    const base = (API_PROXY || 'https://api.anthropic.com').replace(/\/$/, '');
+    const res  = await fetch(`${base}/v1/messages`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`,
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model:       API_MODEL,
-        messages:    messages,
-        max_tokens:  500,
-        temperature: 0.9,
+        model:      API_MODEL,
+        max_tokens: 400,
+        system:     curWorld.chat.systems[activeChatChar] || curWorld.chat.systems[0],
+        messages:   chatHistMap[key],
       }),
     });
-
     const data = await res.json();
     tEl.remove();
-
-    const reply = data?.choices?.[0]?.message?.content;
-    if (reply) {
-      // 存入历史，下次带上实现上下文记忆
-      chatHistMap[key].push({ role: 'assistant', content: reply });
-      addMsg('ai', reply);
+    if (data.content?.[0]?.text) {
+      const rep = data.content[0].text;
+      chatHistMap[key].push({ role: 'assistant', content: rep });
+      addMsg('ai', rep);
     } else {
-      const errMsg = data?.error?.message || JSON.stringify(data);
-      addMsg('ai', `⚠ ${errMsg}`);
+      addMsg('ai', `Error: ${data.error?.message || JSON.stringify(data)}`);
     }
   } catch(e) {
     tEl.remove();
-    addMsg('ai', `⚠ 请求失败：${e.message}`);
+    addMsg('ai', `Network error: ${e.message}`);
   }
   btn.disabled = false;
 }
-
 
 /* ══════════════════════════════════════════════════════════
    MUSIC PLAYER
@@ -390,7 +376,14 @@ aud.addEventListener('timeupdate', () => {
 });
 aud.addEventListener('ended', mpNext);
 
-function mpTogglePanel() { document.getElementById('mp-panel').classList.toggle('op'); }
+function mpTogglePanel() {
+  const panel = document.getElementById('mp-panel');
+  panel.classList.toggle('op');
+  // 展开面板时如果有歌曲且还没播，自动开始播
+  if (panel.classList.contains('op') && tracks.length && !playing) {
+    mpPlay(tIdx);
+  }
+}
 function mpTogglePl()    { document.getElementById('mp-list').classList.toggle('op'); }
 
 function mpUI() {
@@ -465,4 +458,13 @@ window.addEventListener('resize', () => {
 ══════════════════════════════════════════════════════════ */
 buildHome();
 mpUI();
-if (tracks.length) mpPlay(0);
+// 用户第一次点击页面任何地方时自动开始播音乐
+if (tracks.length) {
+  const autoPlay = () => {
+    if (!playing) mpPlay(tIdx);
+    document.removeEventListener('click', autoPlay);
+    document.removeEventListener('touchstart', autoPlay);
+  };
+  document.addEventListener('click', autoPlay);
+  document.addEventListener('touchstart', autoPlay);
+}
