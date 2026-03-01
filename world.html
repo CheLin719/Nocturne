@@ -24,7 +24,10 @@
     <div class="sec-lbl">CHARACTER · GALLERY</div>
     <div class="cg-grid">
       <div class="char-stack" id="d-chars"></div>
-      <div class="gal-grid" id="d-gallery"></div>
+      <div class="gal-wrap">
+        <div class="gal-grid" id="d-gallery"></div>
+        <button class="gal-more-btn" id="gal-more-btn" onclick="galModalOpen()">Gallery →</button>
+      </div>
     </div>
   </div>
 
@@ -110,6 +113,15 @@
     </div>
   </div>
   <button class="mp-fab" id="mp-fab" onclick="mpTogglePanel()">♪</button>
+</div>
+
+<!-- ════════ GALLERY MODAL ════════ -->
+<div id="gal-modal">
+  <div class="gal-modal-head">
+    <div class="gal-modal-title" id="gal-modal-title">画廊</div>
+    <button class="gal-modal-close" onclick="galModalClose()">✕ CLOSE</button>
+  </div>
+  <div class="gal-masonry" id="gal-masonry"></div>
 </div>
 
 <!-- ════════ LIGHTBOX ════════ -->

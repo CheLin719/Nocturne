@@ -114,7 +114,11 @@ const WORLDS = [
       'images/酒吧门口.JPG',
       'images/仓师熊.JPG', 
       'images/抱抱.JPEG',
+      'images/吵架.JPEG',
       'images/家里.JPEG',
+      'images/酒吧门口2.JPG',
+      'images/熊立绘.PNG',
+      'images/涩谷街头.JPEG',
 
     ],
 

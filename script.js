@@ -115,22 +115,7 @@ function loadDetail(w) {
   });
 
   /* 画廊 */
-  const galEl = document.getElementById('d-gallery');
-  galEl.innerHTML = '';
-  const imgs  = w.gallery || [];
-  const total = Math.max(imgs.length, 5);
-  for (let i = 0; i < total; i++) {
-    const item = document.createElement('div');
-    item.className = 'gi';
-    if (imgs[i]) {
-      item.innerHTML = `<img src="${imgs[i]}" alt="" loading="lazy">`;
-      const src = imgs[i];
-      item.onclick = () => lbOpen(src);
-    } else {
-      item.innerHTML = `<div class="gi-empty"><div class="ge">⊹</div><div class="gt">IMAGE</div></div>`;
-    }
-    galEl.appendChild(item);
-  }
+  buildGalleryPreview(w);
 
   /* 视频 */
   const vf  = document.getElementById('d-vframe');
@@ -605,3 +590,249 @@ if (isHomePage && !isWorldPage) {
     document.addEventListener('touchstart', autoPlay);
   }
 }
+/* ══════════════════════════════════════════════════════════
+   GALLERY — 错落展示 + 瀑布流弹窗
+══════════════════════════════════════════════════════════ */
+
+/**
+ * 获取图片真实宽高比
+ * 返回 Promise<{src, ratio}[]>，ratio > 1 为横图，< 1 为竖图
+ */
+function loadImageRatios(srcs) {
+  return Promise.all(srcs.map(src => new Promise(resolve => {
+    const img = new Image();
+    img.onload  = () => resolve({ src, ratio: img.naturalWidth / img.naturalHeight });
+    img.onerror = () => resolve({ src, ratio: 1 }); // 加载失败默认1:1
+    img.src = src;
+  })));
+}
+
+/**
+ * 根据图片比例和数量，生成错落布局方案
+ * 返回每张图的 { gridColumn, gridRow, aspectRatio } 对象
+ */
+function calcLayout(items) {
+  const n = items.length;
+  if (n === 0) return [];
+
+  // 辅助：判断是否横图
+  const isLandscape = r => r >= 1.2;
+  const isPortrait  = r => r < 0.85;
+
+  if (n === 1) {
+    return [{ gridColumn: '1 / -1', gridRow: '1', aspectRatio: Math.min(items[0].ratio, 2.2) }];
+  }
+
+  if (n === 2) {
+    // 两张都是竖图 → 并排；否则上下
+    if (isPortrait(items[0].ratio) && isPortrait(items[1].ratio)) {
+      return [
+        { gridColumn: '1 / 2', gridRow: '1', aspectRatio: items[0].ratio },
+        { gridColumn: '2 / 3', gridRow: '1', aspectRatio: items[1].ratio },
+      ];
+    }
+    return [
+      { gridColumn: '1 / -1', gridRow: '1', aspectRatio: Math.min(items[0].ratio, 2) },
+      { gridColumn: '1 / -1', gridRow: '2', aspectRatio: Math.min(items[1].ratio, 2) },
+    ];
+  }
+
+  if (n === 3) {
+    // 第一张横图大 + 右侧两张竖图叠
+    if (isLandscape(items[0].ratio)) {
+      return [
+        { gridColumn: '1 / 3', gridRow: '1 / 3', aspectRatio: items[0].ratio },
+        { gridColumn: '3 / 4', gridRow: '1',      aspectRatio: items[1].ratio },
+        { gridColumn: '3 / 4', gridRow: '2',      aspectRatio: items[2].ratio },
+      ];
+    }
+    // 第一张竖图左 + 右侧两张
+    return [
+      { gridColumn: '1 / 2', gridRow: '1 / 3', aspectRatio: items[0].ratio },
+      { gridColumn: '2 / 4', gridRow: '1',      aspectRatio: items[1].ratio },
+      { gridColumn: '2 / 4', gridRow: '2',      aspectRatio: items[2].ratio },
+    ];
+  }
+
+  if (n === 4) {
+    // 找最横的那张放大
+    const maxIdx = items.reduce((mi, it, i) => it.ratio > items[mi].ratio ? i : mi, 0);
+    if (maxIdx === 0) {
+      return [
+        { gridColumn: '1 / 3', gridRow: '1',      aspectRatio: items[0].ratio },
+        { gridColumn: '3 / 4', gridRow: '1',      aspectRatio: items[1].ratio },
+        { gridColumn: '1 / 2', gridRow: '2',      aspectRatio: items[2].ratio },
+        { gridColumn: '2 / 4', gridRow: '2',      aspectRatio: items[3].ratio },
+      ];
+    }
+    return [
+      { gridColumn: '1 / 2', gridRow: '1',      aspectRatio: items[0].ratio },
+      { gridColumn: '2 / 4', gridRow: '1',      aspectRatio: items[1].ratio },
+      { gridColumn: '1 / 3', gridRow: '2',      aspectRatio: items[2].ratio },
+      { gridColumn: '3 / 4', gridRow: '2',      aspectRatio: items[3].ratio },
+    ];
+  }
+
+  // 5张：经典杂志布局
+  // 找最横的放左大位，找最竖的放右竖位
+  const sorted = [...items.map((it,i)=>({...it,i}))];
+  const bigIdx     = sorted.reduce((mi,it) => it.ratio > sorted[mi].ratio ? it.i : mi, 0);
+  const thinIdx    = sorted.reduce((mi,it) => it.ratio < sorted[mi].ratio ? it.i : mi, 0);
+
+  const layout = Array(5).fill(null);
+  // 大横图占左侧两列两行
+  layout[bigIdx]  = { gridColumn: '1 / 3', gridRow: '1 / 3', aspectRatio: items[bigIdx].ratio };
+  // 最竖图占右侧竖列两行
+  layout[thinIdx] = { gridColumn: '3 / 4', gridRow: '1 / 3', aspectRatio: items[thinIdx].ratio };
+  // 剩余3张填下方
+  let col = 1;
+  items.forEach((_, i) => {
+    if (i === bigIdx || i === thinIdx) return;
+    layout[i] = { gridColumn: `${col} / ${col+1}`, gridRow: '3', aspectRatio: items[i].ratio };
+    col++;
+  });
+  return layout;
+}
+
+/**
+ * 从所有图片中自动挑选最佳展示组合（最多5张）
+ * 算法目标：让预览区尽量多样——有横图、有竖图、比例丰富
+ *
+ * 策略：
+ * 1. 加载全部图片宽高比
+ * 2. 按比例分桶：横图(ratio≥1.3) / 方图(0.8~1.3) / 竖图(<0.8)
+ * 3. 从各桶优先抽取，保证多样性
+ * 4. 每次 gallery 数组变化（图片数量不同）都重新执行
+ */
+function pickBestPreview(items) {
+  if (items.length <= 5) return items;
+
+  const landscape = items.filter(it => it.ratio >= 1.3);
+  const portrait  = items.filter(it => it.ratio < 0.8);
+  const square    = items.filter(it => it.ratio >= 0.8 && it.ratio < 1.3);
+
+  const picked = [];
+  const used   = new Set();
+
+  const take = (pool, n) => {
+    for (const it of pool) {
+      if (picked.length >= n) break;
+      if (!used.has(it.src)) { picked.push(it); used.add(it.src); }
+    }
+  };
+
+  // 理想：2横 + 2竖 + 1方，根据实际库存灵活补足
+  take(landscape, 2);
+  take(portrait,  2);
+  take(square,    1);
+
+  // 若不足5张，从剩余图里补
+  const rest = items.filter(it => !used.has(it.src));
+  take(rest, 5);
+
+  return picked;
+}
+
+function buildGalleryPreview(w) {
+  const galEl = document.getElementById('d-gallery');
+  const btnEl = document.getElementById('gal-more-btn');
+  galEl.innerHTML = '';
+
+  const allImgs = (w.gallery || []).filter(Boolean);
+
+  if (btnEl) {
+    btnEl.textContent = allImgs.length > 0
+      ? `${w.name} · 画廊 (${allImgs.length}) →`
+      : '画廊 →';
+  }
+
+  if (allImgs.length === 0) {
+    galEl.style.gridTemplateColumns = 'repeat(3,1fr)';
+    for (let i = 0; i < 3; i++) {
+      const item = document.createElement('div');
+      item.className = 'gi';
+      item.style.aspectRatio = '3/4';
+      item.innerHTML = `<div class="gi-empty"><div class="ge">⊹</div><div class="gt">IMAGE</div></div>`;
+      galEl.appendChild(item);
+    }
+    return;
+  }
+
+  // 淡出占位
+  galEl.style.opacity = '0';
+  galEl.style.transition = 'opacity .4s';
+
+  // 加载全部图片的宽高比，再从中挑选最佳5张
+  loadImageRatios(allImgs).then(allItems => {
+    const preview = pickBestPreview(allItems);
+    const layout  = calcLayout(preview);
+
+    galEl.innerHTML = '';
+    galEl.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    galEl.style.gridAutoRows = '160px';
+
+    preview.forEach((it, i) => {
+      const lyt  = layout[i];
+      const item = document.createElement('div');
+      item.className = 'gi';
+      item.style.gridColumn = lyt.gridColumn;
+      item.style.gridRow    = lyt.gridRow;
+
+      const img = document.createElement('img');
+      img.src     = it.src;
+      img.alt     = '';
+      img.loading = 'lazy';
+      item.appendChild(img);
+      item.onclick = () => lbOpen(it.src);
+      galEl.appendChild(item);
+    });
+
+    galEl.style.opacity = '1';
+  });
+}
+
+/* ── 画廊弹窗 ── */
+function galModalOpen() {
+  if (!curWorld) return;
+  const modal   = document.getElementById('gal-modal');
+  const masonry = document.getElementById('gal-masonry');
+  const title   = document.getElementById('gal-modal-title');
+  if (!modal) return;
+
+  title.textContent = curWorld.name + ' · 画廊';
+  masonry.innerHTML = '';
+
+  const imgs = (curWorld.gallery || []).filter(Boolean);
+  if (imgs.length === 0) {
+    masonry.innerHTML = '<p style="color:#333;font-family:\'Space Mono\',monospace;font-size:.6rem;letter-spacing:.12em;text-align:center;padding:40px">NO IMAGES YET</p>';
+  } else {
+    imgs.forEach(src => {
+      const item = document.createElement('div');
+      item.className = 'gal-masonry-item';
+      const img = document.createElement('img');
+      img.src     = src;
+      img.alt     = '';
+      img.loading = 'lazy';
+      item.appendChild(img);
+      item.onclick = () => lbOpen(src);
+      masonry.appendChild(item);
+    });
+  }
+
+  modal.classList.add('op');
+  document.body.style.overflow = 'hidden';
+}
+
+function galModalClose() {
+  const modal = document.getElementById('gal-modal');
+  if (modal) modal.classList.remove('op');
+  document.body.style.overflow = '';
+}
+
+// ESC 关闭画廊弹窗
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('gal-modal');
+    if (modal && modal.classList.contains('op')) { galModalClose(); return; }
+  }
+});
