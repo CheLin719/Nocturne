@@ -110,9 +110,9 @@ const WORLDS = [
     ],
 
     gallery: [
-      'images/仓师熊.PNG',  // ← 填图片 URL，第一张会显示为大图
+      'images/仓师情人节.PNG', // ← 填图片 URL，第一张会显示为大图
       'images/酒吧门口.JPG',
-      'images/仓师情人节.PNG',
+      'images/仓师熊.JPG', 
       'images/抱抱.JPEG',
       'images/家里.JPEG',
 
