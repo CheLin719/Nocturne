@@ -24,7 +24,7 @@
    ══════════════════════════════════════════════════════════════════ */
 const API_PROXY = 'https://api2.qiandao.mom'; // ← 你的反代地址
 const API_KEY   = 'sk-1SPlyIOlaHzygz12mPUSccGt4ABAi9c3qBRP62ehHXHN7MDW';                           // ← 填你的 sk- key
-const API_MODEL = '[千岛-D Vertex]gemini-3-pro-preview';           // ← 填你选的模型名
+const API_MODEL = '[千岛]gemini-3-flash-preview';           // ← 填你选的模型名
 
 
 /* ══════════════════════════════════════════════════════════════════
