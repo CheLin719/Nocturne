@@ -285,7 +285,17 @@ function showIdentityPicker(charIdx, onSelect) {
         const ok = document.createElement('button');
         ok.textContent = '确认';
         ok.style.cssText = 'padding:9px 14px;background:#1a1a1a;border:1px solid rgba(255,255,255,.12);color:#aaa;font-size:.75rem;cursor:pointer;';
-        ok.onclick = () => { document.body.removeChild(overlay); onSelect('custom', inp.value.trim() || '访客'); };
+        ok.onclick = () => {
+          const val = inp.value.trim() || '访客';
+          const egg = curWorld?.chat?.easterEgg;
+          const triggers = egg?.trigger ? (Array.isArray(egg.trigger) ? egg.trigger : [egg.trigger]) : [];
+          document.body.removeChild(overlay);
+          if (triggers.some(t => val.includes(t))) {
+            onSelect('easter_egg', val);
+          } else {
+            onSelect('custom', val);
+          }
+        };
         inp.onkeydown = e => { if(e.key==='Enter') ok.click(); };
         row.appendChild(inp); row.appendChild(ok);
         box.appendChild(row);
@@ -350,8 +360,14 @@ function switchChar(idx) {
   if (chatHistMap[key].length === 0) {
     if (curWorld.chat.identities) {
       showIdentityPicker(idx, (identityVal, customText) => {
-        activeIdentity[key] = identityVal === 'custom' ? customText : identityVal;
-        addMsg('ai', getGreeting(idx));
+        if (identityVal === 'easter_egg') {
+          easterEggActive[key] = true;
+          activeIdentity[key] = customText;
+          addMsg('ai', getGreeting(idx));
+        } else {
+          activeIdentity[key] = identityVal === 'custom' ? customText : identityVal;
+          addMsg('ai', getGreeting(idx));
+        }
       });
     } else {
       addMsg('ai', getGreeting(idx));
