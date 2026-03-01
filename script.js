@@ -146,6 +146,7 @@ function loadDetail(w) {
   chatHistMap = {};
   easterEggActive = {};
   buildChatTabs(w);
+  setTimeout(updateGameBtns, 50);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -591,62 +592,151 @@ if (isHomePage && !isWorldPage) {
   }
 }
 /* ══════════════════════════════════════════════════════════
-   GALLERY — 自动选图预览 + 瀑布流弹窗
+   GALLERY — 错落展示 + 瀑布流弹窗
 ══════════════════════════════════════════════════════════ */
 
 /**
- * 加载一批图片的真实宽高比
- * ratio > 1 横图，< 1 竖图，= 1 方图
+ * 获取图片真实宽高比
+ * 返回 Promise<{src, ratio}[]>，ratio > 1 为横图，< 1 为竖图
  */
 function loadImageRatios(srcs) {
   return Promise.all(srcs.map(src => new Promise(resolve => {
     const img = new Image();
     img.onload  = () => resolve({ src, ratio: img.naturalWidth / img.naturalHeight });
-    img.onerror = () => resolve({ src, ratio: 1 });
+    img.onerror = () => resolve({ src, ratio: 1 }); // 加载失败默认1:1
     img.src = src;
   })));
 }
 
 /**
- * 从所有图片中自动挑选最佳预览组合（最多6张）
- * 策略：按比例分桶（横/竖/方），各桶均衡抽取，保证展示多样性
+ * 根据图片比例和数量，生成错落布局方案
+ * 返回每张图的 { gridColumn, gridRow, aspectRatio } 对象
  */
-function pickBestPreview(items, max = 6) {
-  if (items.length <= max) return items;
+function calcLayout(items) {
+  const n = items.length;
+  if (n === 0) return [];
 
-  const landscape = items.filter(it => it.ratio >= 1.25);
+  // 辅助：判断是否横图
+  const isLandscape = r => r >= 1.2;
+  const isPortrait  = r => r < 0.85;
+
+  if (n === 1) {
+    return [{ gridColumn: '1 / -1', gridRow: '1', aspectRatio: Math.min(items[0].ratio, 2.2) }];
+  }
+
+  if (n === 2) {
+    // 两张都是竖图 → 并排；否则上下
+    if (isPortrait(items[0].ratio) && isPortrait(items[1].ratio)) {
+      return [
+        { gridColumn: '1 / 2', gridRow: '1', aspectRatio: items[0].ratio },
+        { gridColumn: '2 / 3', gridRow: '1', aspectRatio: items[1].ratio },
+      ];
+    }
+    return [
+      { gridColumn: '1 / -1', gridRow: '1', aspectRatio: Math.min(items[0].ratio, 2) },
+      { gridColumn: '1 / -1', gridRow: '2', aspectRatio: Math.min(items[1].ratio, 2) },
+    ];
+  }
+
+  if (n === 3) {
+    // 第一张横图大 + 右侧两张竖图叠
+    if (isLandscape(items[0].ratio)) {
+      return [
+        { gridColumn: '1 / 3', gridRow: '1 / 3', aspectRatio: items[0].ratio },
+        { gridColumn: '3 / 4', gridRow: '1',      aspectRatio: items[1].ratio },
+        { gridColumn: '3 / 4', gridRow: '2',      aspectRatio: items[2].ratio },
+      ];
+    }
+    // 第一张竖图左 + 右侧两张
+    return [
+      { gridColumn: '1 / 2', gridRow: '1 / 3', aspectRatio: items[0].ratio },
+      { gridColumn: '2 / 4', gridRow: '1',      aspectRatio: items[1].ratio },
+      { gridColumn: '2 / 4', gridRow: '2',      aspectRatio: items[2].ratio },
+    ];
+  }
+
+  if (n === 4) {
+    // 找最横的那张放大
+    const maxIdx = items.reduce((mi, it, i) => it.ratio > items[mi].ratio ? i : mi, 0);
+    if (maxIdx === 0) {
+      return [
+        { gridColumn: '1 / 3', gridRow: '1',      aspectRatio: items[0].ratio },
+        { gridColumn: '3 / 4', gridRow: '1',      aspectRatio: items[1].ratio },
+        { gridColumn: '1 / 2', gridRow: '2',      aspectRatio: items[2].ratio },
+        { gridColumn: '2 / 4', gridRow: '2',      aspectRatio: items[3].ratio },
+      ];
+    }
+    return [
+      { gridColumn: '1 / 2', gridRow: '1',      aspectRatio: items[0].ratio },
+      { gridColumn: '2 / 4', gridRow: '1',      aspectRatio: items[1].ratio },
+      { gridColumn: '1 / 3', gridRow: '2',      aspectRatio: items[2].ratio },
+      { gridColumn: '3 / 4', gridRow: '2',      aspectRatio: items[3].ratio },
+    ];
+  }
+
+  // 5张：经典杂志布局
+  // 找最横的放左大位，找最竖的放右竖位
+  const sorted = [...items.map((it,i)=>({...it,i}))];
+  const bigIdx     = sorted.reduce((mi,it) => it.ratio > sorted[mi].ratio ? it.i : mi, 0);
+  const thinIdx    = sorted.reduce((mi,it) => it.ratio < sorted[mi].ratio ? it.i : mi, 0);
+
+  const layout = Array(5).fill(null);
+  // 大横图占左侧两列两行
+  layout[bigIdx]  = { gridColumn: '1 / 3', gridRow: '1 / 3', aspectRatio: items[bigIdx].ratio };
+  // 最竖图占右侧竖列两行
+  layout[thinIdx] = { gridColumn: '3 / 4', gridRow: '1 / 3', aspectRatio: items[thinIdx].ratio };
+  // 剩余3张填下方
+  let col = 1;
+  items.forEach((_, i) => {
+    if (i === bigIdx || i === thinIdx) return;
+    layout[i] = { gridColumn: `${col} / ${col+1}`, gridRow: '3', aspectRatio: items[i].ratio };
+    col++;
+  });
+  return layout;
+}
+
+/**
+ * 从所有图片中自动挑选最佳展示组合（最多5张）
+ * 算法目标：让预览区尽量多样——有横图、有竖图、比例丰富
+ *
+ * 策略：
+ * 1. 加载全部图片宽高比
+ * 2. 按比例分桶：横图(ratio≥1.3) / 方图(0.8~1.3) / 竖图(<0.8)
+ * 3. 从各桶优先抽取，保证多样性
+ * 4. 每次 gallery 数组变化（图片数量不同）都重新执行
+ */
+function pickBestPreview(items) {
+  if (items.length <= 5) return items;
+
+  const landscape = items.filter(it => it.ratio >= 1.3);
   const portrait  = items.filter(it => it.ratio < 0.8);
-  const square    = items.filter(it => it.ratio >= 0.8 && it.ratio < 1.25);
+  const square    = items.filter(it => it.ratio >= 0.8 && it.ratio < 1.3);
 
   const picked = [];
   const used   = new Set();
 
   const take = (pool, n) => {
     for (const it of pool) {
-      if (picked.length >= max) break;
-      if (!used.has(it.src)) { picked.push(it); used.add(it.src); }
       if (picked.length >= n) break;
+      if (!used.has(it.src)) { picked.push(it); used.add(it.src); }
     }
   };
 
-  // 2横 + 2竖 + 2方，按实际库存灵活分配
-  take(landscape, Math.ceil(max / 3));
-  take(portrait,  Math.ceil(max / 3));
-  take(square,    max);
-  // 不足的从剩余补
-  take(items.filter(it => !used.has(it.src)), max);
+  // 理想：2横 + 2竖 + 1方，根据实际库存灵活补足
+  take(landscape, 2);
+  take(portrait,  2);
+  take(square,    1);
+
+  // 若不足5张，从剩余图里补
+  const rest = items.filter(it => !used.has(it.src));
+  take(rest, 5);
 
   return picked;
 }
 
-/**
- * 构建预览画廊
- * 使用 CSS columns 瀑布流，图片保持原始比例，无裁切
- */
 function buildGalleryPreview(w) {
   const galEl = document.getElementById('d-gallery');
   const btnEl = document.getElementById('gal-more-btn');
-  if (!galEl) return;
   galEl.innerHTML = '';
 
   const allImgs = (w.gallery || []).filter(Boolean);
@@ -658,27 +748,37 @@ function buildGalleryPreview(w) {
   }
 
   if (allImgs.length === 0) {
-    // 无图占位
+    galEl.style.gridTemplateColumns = 'repeat(3,1fr)';
     for (let i = 0; i < 3; i++) {
       const item = document.createElement('div');
       item.className = 'gi';
+      item.style.aspectRatio = '3/4';
       item.innerHTML = `<div class="gi-empty"><div class="ge">⊹</div><div class="gt">IMAGE</div></div>`;
       galEl.appendChild(item);
     }
     return;
   }
 
+  // 淡出占位
   galEl.style.opacity = '0';
-  galEl.style.transition = 'opacity .5s';
+  galEl.style.transition = 'opacity .4s';
 
-  // 加载全部图片比例 → 挑选最佳组合 → 渲染
+  // 加载全部图片的宽高比，再从中挑选最佳5张
   loadImageRatios(allImgs).then(allItems => {
-    const preview = pickBestPreview(allItems, 6);
-    galEl.innerHTML = '';
+    const preview = pickBestPreview(allItems);
+    const layout  = calcLayout(preview);
 
-    preview.forEach(it => {
+    galEl.innerHTML = '';
+    galEl.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    galEl.style.gridAutoRows = '160px';
+
+    preview.forEach((it, i) => {
+      const lyt  = layout[i];
       const item = document.createElement('div');
       item.className = 'gi';
+      item.style.gridColumn = lyt.gridColumn;
+      item.style.gridRow    = lyt.gridRow;
+
       const img = document.createElement('img');
       img.src     = it.src;
       img.alt     = '';
@@ -688,15 +788,7 @@ function buildGalleryPreview(w) {
       galEl.appendChild(item);
     });
 
-    // 淡入
-    let loaded = 0;
-    const imgs = galEl.querySelectorAll('img');
-    const onLoad = () => { loaded++; if (loaded >= imgs.length) galEl.style.opacity = '1'; };
-    imgs.forEach(img => {
-      if (img.complete) onLoad();
-      else { img.addEventListener('load', onLoad); img.addEventListener('error', onLoad); }
-    });
-    if (imgs.length === 0) galEl.style.opacity = '1';
+    galEl.style.opacity = '1';
   });
 }
 
@@ -713,7 +805,7 @@ function galModalOpen() {
 
   const imgs = (curWorld.gallery || []).filter(Boolean);
   if (imgs.length === 0) {
-    masonry.innerHTML = `<p style="color:#333;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-align:center;padding:60px 0">NO IMAGES YET</p>`;
+    masonry.innerHTML = '<p style="color:#333;font-family:\'Space Mono\',monospace;font-size:.6rem;letter-spacing:.12em;text-align:center;padding:40px">NO IMAGES YET</p>';
   } else {
     imgs.forEach(src => {
       const item = document.createElement('div');
@@ -745,3 +837,232 @@ document.addEventListener('keydown', e => {
     if (modal && modal.classList.contains('op')) { galModalClose(); return; }
   }
 });
+
+/* ══════════════════════════════════════════════════════════
+   21点游戏
+══════════════════════════════════════════════════════════ */
+
+const BJ_SUITS = ['♠','♣','♥','♦'];
+const BJ_VALS  = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+const BJ_RED   = new Set(['♥','♦']);
+
+// 角色台词库
+const BJ_LINES = {
+  0: { // 悠葉
+    start:  ['……坐下。', '随便。', '别输太惨。'],
+    hit:    ['还要？', '……嗯。', '自己想清楚。'],
+    stand:  ['停了？', '……好。', '看你的。'],
+    win:    ['……运气不错。', '赢了。', '下次不一定。'],
+    lose:   ['……输了。', '再来？', '差一点。'],
+    bust:   ['爆了。', '……', '急什么。'],
+    push:   ['平局。', '……重来。'],
+    bjack:  ['21点。不错。', '……运气好。'],
+  },
+  1: { // 乱数
+    start:  ['嘿嘿～来玩吧♡', '乱数不会手软哦～', '准备输了吗～♡'],
+    hit:    ['哇还要！', '胆子挺大的嘛～', '好好好～'],
+    stand:  ['哎不要牌啦？', '怂了～', '好吧好吧～'],
+    win:    ['咦？赢了！厉害嘛～', '嘿嘿下次我赢回来♡', '……算你厉害。'],
+    lose:   ['嘿嘿～乱数赢啦♡', '输啦输啦～', '再来再来！♡'],
+    bust:   ['爆了哦！哈哈～', '哎呀太贪心了～', '乱数说了会输的♡'],
+    push:   ['平局？！重来！', '这不算！再来！♡'],
+    bjack:  ['哇——！！21点！！♡', '你作弊了吧！！'],
+  }
+};
+
+let bjState = {
+  charIdx: 0,
+  deck: [],
+  playerCards: [],
+  dealerCards: [],
+  gameOver: false,
+};
+
+function bjRandLine(charIdx, key) {
+  const pool = BJ_LINES[charIdx]?.[key] || BJ_LINES[0][key];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function bjMakeDeck() {
+  const deck = [];
+  for (const suit of BJ_SUITS)
+    for (const val of BJ_VALS)
+      deck.push({ suit, val });
+  // 洗牌
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
+}
+
+function bjCardValue(card) {
+  if (['J','Q','K'].includes(card.val)) return 10;
+  if (card.val === 'A') return 11;
+  return parseInt(card.val);
+}
+
+function bjHandScore(cards) {
+  let score = 0, aces = 0;
+  for (const c of cards) {
+    score += bjCardValue(c);
+    if (c.val === 'A') aces++;
+  }
+  while (score > 21 && aces > 0) { score -= 10; aces--; }
+  return score;
+}
+
+function bjRenderCard(card, hidden = false) {
+  const div = document.createElement('div');
+  div.className = 'bj-card' + (hidden ? ' back' : (BJ_RED.has(card.suit) ? ' red' : ''));
+  if (!hidden) {
+    div.innerHTML = `<span class="bj-card-suit">${card.suit}</span><span class="bj-card-val">${card.val}</span>`;
+  }
+  return div;
+}
+
+function bjRenderHands(hideDealer = true) {
+  const pc = document.getElementById('bj-player-cards');
+  const dc = document.getElementById('bj-dealer-cards');
+  const ps = document.getElementById('bj-player-score');
+  const ds = document.getElementById('bj-dealer-score');
+  pc.innerHTML = ''; dc.innerHTML = '';
+
+  bjState.playerCards.forEach(c => pc.appendChild(bjRenderCard(c)));
+  bjState.dealerCards.forEach((c, i) => dc.appendChild(bjRenderCard(c, hideDealer && i === 1)));
+
+  ps.textContent = bjHandScore(bjState.playerCards);
+  ds.textContent = hideDealer
+    ? bjCardValue(bjState.dealerCards[0])
+    : bjHandScore(bjState.dealerCards);
+}
+
+function bjSetLine(text) {
+  document.getElementById('bj-char-line').textContent = text;
+}
+
+function bjOpen(charIdx) {
+  // 只在有对应角色的世界才能玩
+  if (!curWorld || !curWorld.chars[charIdx]) return;
+
+  bjState.charIdx = charIdx;
+  const char = curWorld.chars[charIdx];
+
+  // 更新角色区
+  const av = document.getElementById('bj-char-av');
+  av.innerHTML = char.portrait
+    ? `<img src="${char.portrait}" alt="${char.name}">`
+    : char.name[0];
+  document.getElementById('bj-char-name').textContent = char.name;
+
+  // 显示弹窗
+  document.getElementById('bj-modal').classList.add('op');
+  document.body.style.overflow = 'hidden';
+
+  bjRestart();
+}
+
+function bjClose() {
+  document.getElementById('bj-modal').classList.remove('op');
+  document.body.style.overflow = '';
+}
+
+function bjRestart() {
+  bjState.deck = bjMakeDeck();
+  bjState.playerCards = [bjState.deck.pop(), bjState.deck.pop()];
+  bjState.dealerCards = [bjState.deck.pop(), bjState.deck.pop()];
+  bjState.gameOver = false;
+
+  document.getElementById('bj-result').textContent = '';
+  document.getElementById('bj-result').className = 'bj-result';
+  document.getElementById('bj-actions').style.display = 'flex';
+  document.getElementById('bj-restart').style.display = 'none';
+  document.querySelectorAll('.bj-btn-hit,.bj-btn-stand').forEach(b => b.disabled = false);
+
+  bjSetLine(bjRandLine(bjState.charIdx, 'start'));
+  bjRenderHands(true);
+
+  // 检测玩家21点
+  if (bjHandScore(bjState.playerCards) === 21) {
+    bjSetLine(bjRandLine(bjState.charIdx, 'bjack'));
+    bjEndGame('blackjack');
+  }
+}
+
+function bjHit() {
+  if (bjState.gameOver) return;
+  bjState.playerCards.push(bjState.deck.pop());
+  bjSetLine(bjRandLine(bjState.charIdx, 'hit'));
+  bjRenderHands(true);
+  const score = bjHandScore(bjState.playerCards);
+  if (score > 21) {
+    bjSetLine(bjRandLine(bjState.charIdx, 'bust'));
+    bjEndGame('bust');
+  } else if (score === 21) {
+    bjStand();
+  }
+}
+
+function bjStand() {
+  if (bjState.gameOver) return;
+  bjSetLine(bjRandLine(bjState.charIdx, 'stand'));
+
+  // 庄家补牌到17
+  while (bjHandScore(bjState.dealerCards) < 17) {
+    bjState.dealerCards.push(bjState.deck.pop());
+  }
+  bjRenderHands(false);
+
+  const ps = bjHandScore(bjState.playerCards);
+  const ds = bjHandScore(bjState.dealerCards);
+
+  if (ds > 21 || ps > ds) {
+    setTimeout(() => bjSetLine(bjRandLine(bjState.charIdx, 'win')), 300);
+    bjEndGame('win');
+  } else if (ps === ds) {
+    setTimeout(() => bjSetLine(bjRandLine(bjState.charIdx, 'push')), 300);
+    bjEndGame('push');
+  } else {
+    setTimeout(() => bjSetLine(bjRandLine(bjState.charIdx, 'lose')), 300);
+    bjEndGame('lose');
+  }
+}
+
+function bjEndGame(outcome) {
+  bjState.gameOver = true;
+  document.getElementById('bj-actions').style.display = 'none';
+  document.getElementById('bj-restart').style.display = 'flex';
+
+  const resultEl = document.getElementById('bj-result');
+  const msgs = {
+    win:       ['你赢了', 'YOU WIN'],
+    lose:      ['你输了', 'YOU LOSE'],
+    bust:      ['爆牌', 'BUST'],
+    push:      ['平局', 'PUSH'],
+    blackjack: ['21点！', 'BLACKJACK!'],
+  };
+  const [cn, en] = msgs[outcome] || ['—','—'];
+  resultEl.textContent = `${cn}  ${en}`;
+  resultEl.className = 'bj-result ' +
+    (outcome === 'win' || outcome === 'blackjack' ? 'win' :
+     outcome === 'push' ? 'push' : 'lose');
+
+  bjRenderHands(false);
+}
+
+// ESC 关闭
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const bj = document.getElementById('bj-modal');
+    if (bj && bj.classList.contains('op')) { bjClose(); return; }
+  }
+});
+
+// 两侧按钮根据角色存在与否显示/隐藏
+function updateGameBtns() {
+  if (!curWorld) return;
+  const btn0 = document.getElementById('game-btn-0');
+  const btn1 = document.getElementById('game-btn-1');
+  if (btn0) btn0.style.display = curWorld.chars[0] ? 'flex' : 'none';
+  if (btn1) btn1.style.display = curWorld.chars[1] ? 'flex' : 'none';
+}

@@ -65,27 +65,44 @@
   <!-- 对话 -->
   <div class="d-sec" id="sec-chat">
     <div class="sec-lbl">DIALOGUE</div>
-    <div class="chat-wrap">
 
-      <div class="chat-tabs" id="d-ctabs"></div>
+    <div class="chat-outer">
 
-      <div class="chat-box">
-        <div class="chat-hd">
-          <div class="chat-av" id="d-cav">—</div>
-          <div>
-            <div class="chat-cn" id="d-cname">—</div>
-            <div class="chat-cr" id="d-crole">—</div>
+      <!-- 左侧：悠葉游戏入口 -->
+      <div class="game-side game-side-left" id="game-btn-0" onclick="bjOpen(0)">
+        <div class="game-side-icon">♠</div>
+        <div class="game-side-label">与老板<br>玩一局</div>
+        <div class="game-side-sub">21 POINT</div>
+      </div>
+
+      <!-- 中间：对话框 -->
+      <div class="chat-wrap">
+        <div class="chat-tabs" id="d-ctabs"></div>
+        <div class="chat-box">
+          <div class="chat-hd">
+            <div class="chat-av" id="d-cav">—</div>
+            <div>
+              <div class="chat-cn" id="d-cname">—</div>
+              <div class="chat-cr" id="d-crole">—</div>
+            </div>
+            <div class="chat-ol">ONLINE</div>
           </div>
-          <div class="chat-ol">ONLINE</div>
+          <div class="chat-msgs" id="d-msgs"></div>
+          <div class="chat-input-row">
+            <textarea class="chat-ta" id="d-input" rows="1"
+              placeholder="Say something…"
+              onkeydown="ckEnter(event)"
+              oninput="autoR(this)"></textarea>
+            <button class="chat-send" id="d-send" onclick="doChat()">↑</button>
+          </div>
         </div>
-        <div class="chat-msgs" id="d-msgs"></div>
-        <div class="chat-input-row">
-          <textarea class="chat-ta" id="d-input" rows="1"
-            placeholder="Say something…"
-            onkeydown="ckEnter(event)"
-            oninput="autoR(this)"></textarea>
-          <button class="chat-send" id="d-send" onclick="doChat()">↑</button>
-        </div>
+      </div>
+
+      <!-- 右侧：乱数游戏入口 -->
+      <div class="game-side game-side-right" id="game-btn-1" onclick="bjOpen(1)">
+        <div class="game-side-icon">♦</div>
+        <div class="game-side-label">与乱数<br>玩一局</div>
+        <div class="game-side-sub">21 POINT</div>
       </div>
 
     </div>
@@ -113,6 +130,56 @@
     </div>
   </div>
   <button class="mp-fab" id="mp-fab" onclick="mpTogglePanel()">♪</button>
+</div>
+
+<!-- ════════ BLACKJACK GAME ════════ -->
+<div id="bj-modal">
+  <div class="bj-wrap">
+
+    <!-- 角色头像区 -->
+    <div class="bj-char-area">
+      <div class="bj-char-av" id="bj-char-av">—</div>
+      <div class="bj-char-name" id="bj-char-name">—</div>
+      <div class="bj-char-line" id="bj-char-line">准备好了吗？</div>
+    </div>
+
+    <!-- 牌桌区 -->
+    <div class="bj-table">
+
+      <div class="bj-close-row">
+        <span class="bj-title">21 POINT</span>
+        <button class="bj-close-btn" onclick="bjClose()">✕</button>
+      </div>
+
+      <!-- 庄家 -->
+      <div class="bj-zone">
+        <div class="bj-zone-lbl">庄家 <span id="bj-dealer-score"></span></div>
+        <div class="bj-cards" id="bj-dealer-cards"></div>
+      </div>
+
+      <!-- 分割线 -->
+      <div class="bj-divider"></div>
+
+      <!-- 玩家 -->
+      <div class="bj-zone">
+        <div class="bj-zone-lbl">你 <span id="bj-player-score"></span></div>
+        <div class="bj-cards" id="bj-player-cards"></div>
+      </div>
+
+      <!-- 结果提示 -->
+      <div class="bj-result" id="bj-result"></div>
+
+      <!-- 操作按钮 -->
+      <div class="bj-actions" id="bj-actions">
+        <button class="bj-btn bj-btn-hit"   onclick="bjHit()">要牌 HIT</button>
+        <button class="bj-btn bj-btn-stand" onclick="bjStand()">停牌 STAND</button>
+      </div>
+      <div class="bj-actions" id="bj-restart" style="display:none">
+        <button class="bj-btn bj-btn-restart" onclick="bjRestart()">再来一局</button>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <!-- ════════ GALLERY MODAL ════════ -->
