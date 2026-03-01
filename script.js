@@ -303,7 +303,7 @@ function autoR(el) {
 
 async function doChat() {
   if (!API_KEY) {
-    addMsg('ai', '⚠ 请在 data.js 顶部填入 API_KEY 后重新打开页面。');
+    addMsg('ai', '⚠ 请在 data.js 顶部填入 API_KEY。');
     return;
   }
   const inp = document.getElementById('d-input');
@@ -312,11 +312,17 @@ async function doChat() {
 
   inp.value = ''; inp.style.height = 'auto';
 
+  // 每个角色独立的对话历史 key
   const key = curWorld.id + '_' + activeChatChar;
   if (!chatHistMap[key]) chatHistMap[key] = [];
 
   addMsg('user', txt);
+
+  // OpenAI 兼容格式：role 用 'user'/'assistant'
   chatHistMap[key].push({ role: 'user', content: txt });
+
+  // 超过 40 条（20轮）删最旧一轮
+  while (chatHistMap[key].length > 40) chatHistMap[key].splice(0, 2);
 
   const btn  = document.getElementById('d-send');
   const msgs = document.getElementById('d-msgs');
@@ -329,37 +335,51 @@ async function doChat() {
   msgs.scrollTop = msgs.scrollHeight;
 
   try {
-    const base = (API_PROXY || 'https://api.anthropic.com').replace(/\/$/, '');
-    const res  = await fetch(`${base}/v1/messages`, {
+    // OpenAI 兼容格式：反代地址 + /v1/chat/completions
+    const base = (API_PROXY || 'https://api.openai.com').replace(/\/$/, '');
+    const url  = `${base}/v1/chat/completions`;
+
+    const systemPrompt = curWorld.chat.systems[activeChatChar] || curWorld.chat.systems[0];
+
+    // system prompt 放在 messages 最前面，保证角色人设始终有效
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...chatHistMap[key],
+    ];
+
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
+        'Authorization': `Bearer ${API_KEY}`,
       },
       body: JSON.stringify({
-        model:      API_MODEL,
-        max_tokens: 400,
-        system:     curWorld.chat.systems[activeChatChar] || curWorld.chat.systems[0],
-        messages:   chatHistMap[key],
+        model:       API_MODEL,
+        messages:    messages,
+        max_tokens:  500,
+        temperature: 0.9,
       }),
     });
+
     const data = await res.json();
     tEl.remove();
-    if (data.content?.[0]?.text) {
-      const rep = data.content[0].text;
-      chatHistMap[key].push({ role: 'assistant', content: rep });
-      addMsg('ai', rep);
+
+    const reply = data?.choices?.[0]?.message?.content;
+    if (reply) {
+      // 存入历史，下次带上实现上下文记忆
+      chatHistMap[key].push({ role: 'assistant', content: reply });
+      addMsg('ai', reply);
     } else {
-      addMsg('ai', `Error: ${data.error?.message || JSON.stringify(data)}`);
+      const errMsg = data?.error?.message || JSON.stringify(data);
+      addMsg('ai', `⚠ ${errMsg}`);
     }
   } catch(e) {
     tEl.remove();
-    addMsg('ai', `Network error: ${e.message}`);
+    addMsg('ai', `⚠ 请求失败：${e.message}`);
   }
   btn.disabled = false;
 }
+
 
 /* ══════════════════════════════════════════════════════════
    MUSIC PLAYER

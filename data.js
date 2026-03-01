@@ -13,9 +13,18 @@
    API_KEY   : 你的 API Key（sk-ant-...）
    API_MODEL : 使用的模型名，一般不用改
    ══════════════════════════════════════════════════════════════════ */
-const API_PROXY = '';
-const API_KEY   = '';
-const API_MODEL = 'claude-sonnet-4-20250514';
+/* ══════════════════════════════════════════════════════════════════
+   ↓↓↓ 在这里填入你的配置 ↓↓↓
+   ══════════════════════════════════════════════════════════════════
+   API_PROXY : 反代根地址，不要加 /v1
+               例：'https://api2.qiandao.mom'
+   API_KEY   : sk- 开头的 key
+   API_MODEL : 在反代平台的模型列表里找，复制模型名粘贴过来
+               常用：'gemini-1.5-flash' / 'gpt-4o' / 'claude-3-5-sonnet-20241022'
+   ══════════════════════════════════════════════════════════════════ */
+const API_PROXY = 'https://api2.qiandao.mom'; // ← 你的反代地址
+const API_KEY   = 'sk-1SPlyIOlaHzygz12mPUSccGt4ABAi9c3qBRP62ehHXHN7MDW';                           // ← 填你的 sk- key
+const API_MODEL = '[千岛-D Vertex]gemini-3-pro-preview';           // ← 填你选的模型名
 
 
 /* ══════════════════════════════════════════════════════════════════
@@ -25,8 +34,7 @@ const API_MODEL = 'claude-sonnet-4-20250514';
    可以填多首，播放器会自动循环
    ══════════════════════════════════════════════════════════════════ */
 const TRACKS = [
-  // { name: 'Moonlight', src: 'https://example.com/moonlight.mp3' },
-  // { name: '夜曲',      src: 'https://example.com/yequ.mp3' },
+  { name: '名取求婚', src: './music/proposal.m4a' }
 ];
 
 
@@ -87,7 +95,7 @@ const WORLDS = [
         name: '夜桜悠葉',
         alias: 'Yoen',
         tags: ['“酒吧老板”', '杀手'],
-        bio: '经营着一家清吧，每天看起来无所事事',
+        bio: '经营着一家清吧，每天看起来无所事事。脾气很好的老板，最大的爱好是睡觉，你经常可以在他店里看到一位可爱的粉毛男子',
         portrait: 'images/夜立绘.JPG',  // ← 填立绘图 URL
         flip: false,
       },
