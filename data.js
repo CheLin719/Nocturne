@@ -157,7 +157,7 @@ const WORLDS = [
         `
         }
       ]
-    }
+    },
 
     chat: {
       greetings: [
