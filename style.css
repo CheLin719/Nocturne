@@ -592,9 +592,9 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
   width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;
   border-top:6px solid rgba(255,255,255,.08);
 }
-#bj-speech-text{font-size:.78rem;color:rgba(255,255,255,.6);letter-spacing:.04em;line-height:1.5;}
-.bj-hand-label{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.15em;color:rgba(255,255,255,.35);position:relative;z-index:2;margin-bottom:5px;}
-.bj-score{color:rgba(255,255,255,.65);font-size:.78rem;font-weight:700;}
+#bj-speech-text{font-size:.9rem;color:rgba(255,255,255,.85);letter-spacing:.04em;line-height:1.5;}
+.bj-hand-label{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.15em;color:rgba(255,255,255,.6);position:relative;z-index:2;margin-bottom:5px;}
+.bj-score{color:#fff;font-size:.95rem;font-weight:700;}
 .bj-hand{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;position:relative;z-index:2;min-height:72px;align-items:flex-end;}
 .bj-felt-mid{
   flex:0 0 16%;display:flex;align-items:center;justify-content:space-between;
@@ -611,7 +611,7 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
 .bj-deck-card:nth-child(1){top:0;left:0;}
 .bj-deck-card:nth-child(2){top:-2px;left:1px;}
 .bj-deck-card:nth-child(3){top:-4px;left:2px;}
-.bj-deck-label{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.18em;color:rgba(255,255,255,.2);}
+.bj-deck-label{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.18em;color:rgba(255,255,255,.35);}
 .bj-result-area{flex:1;text-align:center;}
 .bj-result{
   font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;
@@ -621,7 +621,7 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
 .bj-result.win{color:#a8d8a8!important;}
 .bj-result.lose{color:#d8a8a8!important;}
 .bj-result.push{color:#d8c87a!important;}
-.bj-bet-display{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.08em;color:rgba(255,255,255,.55);text-align:right;min-width:140px;line-height:1.8;}
+.bj-bet-display{font-family:'Space Mono',monospace;font-size:.75rem;letter-spacing:.08em;color:rgba(255,255,255,.75);text-align:right;min-width:150px;line-height:1.9;}
 .bj-player-zone{flex:0 0 42%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:8px 20px 10px;position:relative;}
 .bj-chips{display:flex;gap:8px;margin:8px 0 6px;position:relative;z-index:2;}
 .bj-chip{
@@ -640,8 +640,8 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
 .bj-chip.disabled{opacity:.35;pointer-events:none;}
 .bj-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;position:relative;z-index:2;margin-top:4px;}
 .bj-btn{
-  font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.12em;
-  padding:8px 16px;background:rgba(255,255,255,.04);
+  font-family:'Space Mono',monospace;font-size:.46rem;letter-spacing:.14em;
+  padding:7px 14px;background:rgba(255,255,255,.04);
   border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);
   cursor:pointer;transition:background .2s,border-color .2s,color .2s;
 }
@@ -664,9 +664,9 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
 }
 .bj-card-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;color:#1a1a1a;font-family:'Georgia',serif;}
 .bj-card.red .bj-card-inner{color:#c0392b;}
-.bj-card-corner-tl{position:absolute;top:3px;left:4px;font-size:.68rem;font-weight:700;line-height:1.1;text-align:center;}
-.bj-card-corner-br{position:absolute;bottom:3px;right:4px;font-size:.55rem;font-weight:700;line-height:1.1;text-align:center;transform:rotate(180deg);}
-.bj-card-center{font-size:1.55rem;}
+.bj-card-corner-tl{position:absolute;top:3px;left:4px;font-size:.75rem;font-weight:700;line-height:1.1;text-align:center;}
+.bj-card-corner-br{position:absolute;bottom:3px;right:4px;font-size:.75rem;font-weight:700;line-height:1.1;text-align:center;transform:rotate(180deg);}
+.bj-card-center{font-size:1.7rem;}
 .bj-card.flip-anim{animation:flipCard .4s ease forwards;}
 @keyframes flipCard{0%{transform:rotateY(0);}50%{transform:rotateY(90deg);opacity:.5;}100%{transform:rotateY(0);opacity:1;}}
 @media(max-width:500px){
