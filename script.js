@@ -676,45 +676,9 @@ function buildGalleryPreview(w) {
     const preview = pickBestPreview(allItems, 6);
     galEl.innerHTML = '';
 
-    // 每行高度80px，根据宽高比计算span行数
-    // 3列布局下单列宽约为容器1/3
-    // span = ceil(显示高度 / 行高) = ceil((colWidth / ratio) / rowH)
-    // 用统一基准：竖图span多，横图span少，方图居中
-    const COLS    = 3;
-    const ROW_H   = 80;   // px，对应 grid-auto-rows
-    const GAP     = 6;
-
-    // 等比计算：假设列宽约为容器宽度/3，算出图片渲染高度再折算span
-    // 先算每张图的"理想span"
-    const spans = preview.map(it => {
-      // ratio = w/h，列宽固定时，渲染高度 = colWidth / ratio
-      // 目标：横图约3-4行，方图约4-5行，竖图约6-8行
-      const baseSpan = Math.round(4 / it.ratio);
-      return Math.max(3, Math.min(10, baseSpan));
-    });
-
-    // 填满算法：模拟3列grid，追踪每列已用行数，贪心分配
-    // 让每张图放到最矮的列，并调整span使各列高度尽量对齐
-    const colHeights = [0, 0, 0];
-
-    preview.forEach((it, i) => {
+    preview.forEach(it => {
       const item = document.createElement('div');
       item.className = 'gi';
-
-      let span = spans[i];
-
-      // 如果是最后几张图，尝试拉伸span让各列高度对齐
-      if (i >= preview.length - COLS) {
-        const maxCol = Math.max(...colHeights);
-        const minCol = Math.min(...colHeights);
-        const colIdx = colHeights.indexOf(minCol);
-        // 让最矮列的最后一张图拉伸到最高列的高度
-        const stretch = maxCol - minCol;
-        if (stretch > 0) span = span + stretch;
-      }
-
-      item.style.gridRow = `span ${span}`;
-
       const img = document.createElement('img');
       img.src     = it.src;
       img.alt     = '';
@@ -722,10 +686,6 @@ function buildGalleryPreview(w) {
       item.appendChild(img);
       item.onclick = () => lbOpen(it.src);
       galEl.appendChild(item);
-
-      // 更新最矮列高度
-      const minIdx = colHeights.indexOf(Math.min(...colHeights));
-      colHeights[minIdx] += span;
     });
 
     // 淡入
