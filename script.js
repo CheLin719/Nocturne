@@ -839,230 +839,456 @@ document.addEventListener('keydown', e => {
 });
 
 /* ══════════════════════════════════════════════════════════
-   21点游戏
+   21点游戏 — 标准规则（分牌/双倍/保险）
 ══════════════════════════════════════════════════════════ */
+
+/* ── 台词库 ── */
+const BJ_LINES = {
+  0: { // 悠葉（冷淡）
+    idle:    ['……随便坐。', '要玩就认真点。', '……'],
+    deal:    ['发牌了。', '……看好。', '开始吧。'],
+    hit:     ['……还要？', '自己想清楚。', '随便。'],
+    stand:   ['停了？', '看你的。', '……嗯。'],
+    double:  ['……胆子不小。', '赌注翻倍。'],
+    split:   ['分牌。', '……分开打吧。'],
+    insure:  ['……保险？', '谨慎。'],
+    bust:    ['爆了。', '……差一点。', '想太多了。'],
+    win:     ['……赢了。', '运气不错。', '这次算你的。'],
+    lose:    ['输了。', '……再来。', '差了点。'],
+    push:    ['平局。', '……重来。'],
+    bjack:   ['21点。', '……运气好。', '不错。'],
+  },
+  1: { // 乱数（活泼）
+    idle:    ['来来来♡', '嘿嘿～准备输了吗', '乱数不手软哦～'],
+    deal:    ['开始啦♡', '嘿嘿看好了哦！', '这次乱数赢定了♡'],
+    hit:     ['哇还要！', '胆子够大嘛～', '好好好～'],
+    stand:   ['哎不要了啊？', '怂了～', '好吧好吧！'],
+    double:  ['哇双倍！！♡', '这么有信心吗～'],
+    split:   ['分开打！！', '嘿嘿这样更有趣♡'],
+    insure:  ['买保险啊！', '这么怂的吗～'],
+    bust:    ['爆啦爆啦！哈哈～', '太贪心啦♡', '哎呀～'],
+    win:     ['咦赢了！厉害嘛♡', '下次乱数赢回来！', '……算你的。'],
+    lose:    ['嘿嘿乱数赢啦♡', '再来再来！', '输啦～'],
+    push:    ['平局！？重来！！', '不算不算♡'],
+    bjack:   ['哇——！！21点！！♡', '你作弊了吧！！'],
+  },
+};
+
+function bjLine(charIdx, key) {
+  const pool = BJ_LINES[charIdx]?.[key] ?? BJ_LINES[0].idle;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+function bjSay(key) {
+  const el = document.getElementById('bj-speech-text');
+  if (el) el.textContent = bjLine(BJ.charIdx, key);
+}
+
+/* ── 状态 ── */
+const BJ = {
+  charIdx: 0,
+  deck: [],
+  player: [],   // [{suit,val}]
+  playerSplit: null,  // 分牌后第二手
+  dealer: [],
+  chips: 1000,
+  bet: 0,
+  insureBet: 0,
+  phase: 'bet',   // bet | play | splitPlay | over
+  activeHand: 'player',  // player | split
+  insured: false,
+};
 
 const BJ_SUITS = ['♠','♣','♥','♦'];
 const BJ_VALS  = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 const BJ_RED   = new Set(['♥','♦']);
 
-// 角色台词库
-const BJ_LINES = {
-  0: { // 悠葉
-    start:  ['……坐下。', '随便。', '别输太惨。'],
-    hit:    ['还要？', '……嗯。', '自己想清楚。'],
-    stand:  ['停了？', '……好。', '看你的。'],
-    win:    ['……运气不错。', '赢了。', '下次不一定。'],
-    lose:   ['……输了。', '再来？', '差一点。'],
-    bust:   ['爆了。', '……', '急什么。'],
-    push:   ['平局。', '……重来。'],
-    bjack:  ['21点。不错。', '……运气好。'],
-  },
-  1: { // 乱数
-    start:  ['嘿嘿～来玩吧♡', '乱数不会手软哦～', '准备输了吗～♡'],
-    hit:    ['哇还要！', '胆子挺大的嘛～', '好好好～'],
-    stand:  ['哎不要牌啦？', '怂了～', '好吧好吧～'],
-    win:    ['咦？赢了！厉害嘛～', '嘿嘿下次我赢回来♡', '……算你厉害。'],
-    lose:   ['嘿嘿～乱数赢啦♡', '输啦输啦～', '再来再来！♡'],
-    bust:   ['爆了哦！哈哈～', '哎呀太贪心了～', '乱数说了会输的♡'],
-    push:   ['平局？！重来！', '这不算！再来！♡'],
-    bjack:  ['哇——！！21点！！♡', '你作弊了吧！！'],
+function bjMakeDeck(decks = 6) {
+  const d = [];
+  for (let n = 0; n < decks; n++)
+    for (const s of BJ_SUITS)
+      for (const v of BJ_VALS)
+        d.push({suit: s, val: v});
+  for (let i = d.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [d[i], d[j]] = [d[j], d[i]];
   }
-};
-
-let bjState = {
-  charIdx: 0,
-  deck: [],
-  playerCards: [],
-  dealerCards: [],
-  gameOver: false,
-};
-
-function bjRandLine(charIdx, key) {
-  const pool = BJ_LINES[charIdx]?.[key] || BJ_LINES[0][key];
-  return pool[Math.floor(Math.random() * pool.length)];
+  return d;
 }
 
-function bjMakeDeck() {
-  const deck = [];
-  for (const suit of BJ_SUITS)
-    for (const val of BJ_VALS)
-      deck.push({ suit, val });
-  // 洗牌
-  for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
-  return deck;
+function bjCardNum(c) {
+  if (['J','Q','K'].includes(c.val)) return 10;
+  if (c.val === 'A') return 11;
+  return +c.val;
 }
 
-function bjCardValue(card) {
-  if (['J','Q','K'].includes(card.val)) return 10;
-  if (card.val === 'A') return 11;
-  return parseInt(card.val);
+function bjScore(hand) {
+  let s = 0, aces = 0;
+  for (const c of hand) { s += bjCardNum(c); if (c.val==='A') aces++; }
+  while (s > 21 && aces > 0) { s -= 10; aces--; }
+  return s;
 }
 
-function bjHandScore(cards) {
-  let score = 0, aces = 0;
-  for (const c of cards) {
-    score += bjCardValue(c);
-    if (c.val === 'A') aces++;
-  }
-  while (score > 21 && aces > 0) { score -= 10; aces--; }
-  return score;
+function bjPop() {
+  if (BJ.deck.length < 20) BJ.deck = bjMakeDeck();
+  return BJ.deck.pop();
 }
 
-function bjRenderCard(card, hidden = false) {
+/* ── 渲染牌 ── */
+function bjMakeCardEl(card, faceDown = false, delay = 0) {
   const div = document.createElement('div');
-  div.className = 'bj-card' + (hidden ? ' back' : (BJ_RED.has(card.suit) ? ' red' : ''));
-  if (!hidden) {
-    div.innerHTML = `<span class="bj-card-suit">${card.suit}</span><span class="bj-card-val">${card.val}</span>`;
+  div.className = 'bj-card' + (faceDown ? ' back' : '') +
+                  (BJ_RED.has(card.suit) && !faceDown ? ' red' : '');
+  div.dataset.suit = card.suit;
+  div.dataset.val  = card.val;
+
+  if (!faceDown) {
+    div.innerHTML = `
+      <div class="bj-card-inner">
+        <div class="bj-card-corner-tl">${card.val}<br>${card.suit}</div>
+        <div class="bj-card-center">${card.suit}</div>
+        <div class="bj-card-corner-br">${card.val}<br>${card.suit}</div>
+      </div>`;
   }
+  // 发牌动画延迟
+  setTimeout(() => div.classList.add('dealt'), delay);
   return div;
 }
 
-function bjRenderHands(hideDealer = true) {
-  const pc = document.getElementById('bj-player-cards');
-  const dc = document.getElementById('bj-dealer-cards');
+function bjFlipCard(el, card) {
+  el.classList.remove('back');
+  if (BJ_RED.has(card.suit)) el.classList.add('red');
+  el.innerHTML = `
+    <div class="bj-card-inner">
+      <div class="bj-card-corner-tl">${card.val}<br>${card.suit}</div>
+      <div class="bj-card-center">${card.suit}</div>
+      <div class="bj-card-corner-br">${card.val}<br>${card.suit}</div>
+    </div>`;
+  el.classList.add('flip-anim');
+  setTimeout(() => el.classList.remove('flip-anim'), 400);
+}
+
+function bjRender(hideDealer = true) {
+  const ph = document.getElementById('bj-player-hand');
+  const dh = document.getElementById('bj-dealer-hand');
   const ps = document.getElementById('bj-player-score');
   const ds = document.getElementById('bj-dealer-score');
-  pc.innerHTML = ''; dc.innerHTML = '';
+  ph.innerHTML = ''; dh.innerHTML = '';
 
-  bjState.playerCards.forEach(c => pc.appendChild(bjRenderCard(c)));
-  bjState.dealerCards.forEach((c, i) => dc.appendChild(bjRenderCard(c, hideDealer && i === 1)));
+  BJ.player.forEach((c, i) => ph.appendChild(bjMakeCardEl(c, false, i * 120)));
 
-  ps.textContent = bjHandScore(bjState.playerCards);
-  ds.textContent = hideDealer
-    ? bjCardValue(bjState.dealerCards[0])
-    : bjHandScore(bjState.dealerCards);
+  BJ.dealer.forEach((c, i) => {
+    const hidden = hideDealer && i === 1;
+    dh.appendChild(bjMakeCardEl(c, hidden, i * 120));
+  });
+
+  ps.textContent = bjScore(BJ.player);
+  ds.textContent = hideDealer ? bjCardNum(BJ.dealer[0]) : bjScore(BJ.dealer);
+
+  document.getElementById('bj-bet-val').textContent   = BJ.bet;
+  document.getElementById('bj-chips-val').textContent = BJ.chips;
 }
 
-function bjSetLine(text) {
-  document.getElementById('bj-char-line').textContent = text;
+function bjAddCard(target, card, delay = 0) {
+  const hand = target === 'player' ? 'bj-player-hand' : 'bj-dealer-hand';
+  document.getElementById(hand).appendChild(bjMakeCardEl(card, false, delay));
 }
 
+/* ── 按钮显示控制 ── */
+function bjShowBtns(ids) {
+  ['bj-deal-btn','bj-hit-btn','bj-stand-btn','bj-double-btn',
+   'bj-split-btn','bj-insure-btn','bj-new-btn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = ids.includes(id) ? '' : 'none';
+  });
+}
+
+function bjChipsDisabled(disabled) {
+  document.querySelectorAll('.bj-chip').forEach(c =>
+    c.classList.toggle('disabled', disabled));
+}
+
+function bjSetResult(text, cls = '') {
+  const el = document.getElementById('bj-result');
+  el.textContent = text;
+  el.className = 'bj-result show ' + cls;
+}
+function bjClearResult() {
+  const el = document.getElementById('bj-result');
+  el.textContent = '';
+  el.className = 'bj-result';
+}
+
+/* ── 开局 ── */
 function bjOpen(charIdx) {
-  // 只在有对应角色的世界才能玩
-  if (!curWorld || !curWorld.chars[charIdx]) return;
-
-  bjState.charIdx = charIdx;
+  if (!curWorld?.chars?.[charIdx]) return;
+  BJ.charIdx = charIdx;
   const char = curWorld.chars[charIdx];
 
-  // 更新角色区
+  // 角色头像
   const av = document.getElementById('bj-char-av');
-  av.innerHTML = char.portrait
-    ? `<img src="${char.portrait}" alt="${char.name}">`
-    : char.name[0];
-  document.getElementById('bj-char-name').textContent = char.name;
+  if (char.portrait) {
+    av.innerHTML = `<img src="${char.portrait}" alt="">`;
+  } else {
+    av.textContent = char.name[0] || '?';
+  }
+  document.getElementById('bj-char-nm').textContent = char.name;
 
-  // 显示弹窗
   document.getElementById('bj-modal').classList.add('op');
   document.body.style.overflow = 'hidden';
 
-  bjRestart();
+  bjNewRound();
 }
 
 function bjClose() {
   document.getElementById('bj-modal').classList.remove('op');
   document.body.style.overflow = '';
 }
-
-function bjRestart() {
-  bjState.deck = bjMakeDeck();
-  bjState.playerCards = [bjState.deck.pop(), bjState.deck.pop()];
-  bjState.dealerCards = [bjState.deck.pop(), bjState.deck.pop()];
-  bjState.gameOver = false;
-
-  document.getElementById('bj-result').textContent = '';
-  document.getElementById('bj-result').className = 'bj-result';
-  document.getElementById('bj-actions').style.display = 'flex';
-  document.getElementById('bj-restart').style.display = 'none';
-  document.querySelectorAll('.bj-btn-hit,.bj-btn-stand').forEach(b => b.disabled = false);
-
-  bjSetLine(bjRandLine(bjState.charIdx, 'start'));
-  bjRenderHands(true);
-
-  // 检测玩家21点
-  if (bjHandScore(bjState.playerCards) === 21) {
-    bjSetLine(bjRandLine(bjState.charIdx, 'bjack'));
-    bjEndGame('blackjack');
-  }
+function bjModalBgClick(e) {
+  if (e.target === document.getElementById('bj-modal')) bjClose();
 }
 
+/* ── 新一局 ── */
+function bjNewRound() {
+  if (!BJ.deck.length) BJ.deck = bjMakeDeck();
+  BJ.player      = [];
+  BJ.playerSplit = null;
+  BJ.dealer      = [];
+  BJ.bet         = 0;
+  BJ.insureBet   = 0;
+  BJ.insured     = false;
+  BJ.phase       = 'bet';
+  BJ.activeHand  = 'player';
+
+  document.getElementById('bj-player-hand').innerHTML = '';
+  document.getElementById('bj-dealer-hand').innerHTML = '';
+  document.getElementById('bj-player-score').textContent = '';
+  document.getElementById('bj-dealer-score').textContent = '';
+  document.getElementById('bj-bet-val').textContent = '0';
+  document.getElementById('bj-chips-val').textContent = BJ.chips;
+  bjClearResult();
+  bjChipsDisabled(false);
+  bjSay('idle');
+
+  // 破产重置
+  if (BJ.chips <= 0) {
+    BJ.chips = 1000;
+    document.getElementById('bj-chips-val').textContent = BJ.chips;
+  }
+
+  bjShowBtns(['bj-deal-btn']);
+  document.getElementById('bj-deal-btn').disabled = true; // 需先下注
+}
+
+/* ── 下注 ── */
+function bjBet(amount) {
+  if (BJ.phase !== 'bet') return;
+  if (BJ.chips < amount) return;
+  BJ.bet   += amount;
+  BJ.chips -= amount;
+  document.getElementById('bj-bet-val').textContent   = BJ.bet;
+  document.getElementById('bj-chips-val').textContent = BJ.chips;
+  document.getElementById('bj-deal-btn').disabled = false;
+}
+
+/* ── 发牌 ── */
+function bjDeal() {
+  if (BJ.bet === 0) return;
+  BJ.phase = 'play';
+  bjChipsDisabled(true);
+
+  BJ.player = [bjPop(), bjPop()];
+  BJ.dealer = [bjPop(), bjPop()];
+  bjRender(true);
+  bjSay('deal');
+
+  setTimeout(() => {
+    const ps = bjScore(BJ.player);
+    const canSplit   = BJ.player[0].val === BJ.player[1].val && BJ.chips >= BJ.bet;
+    const canDouble  = BJ.chips >= BJ.bet;
+    const dealerAce  = BJ.dealer[0].val === 'A';
+    const canInsure  = dealerAce && !BJ.insured && BJ.chips >= Math.floor(BJ.bet/2);
+
+    if (ps === 21) {
+      bjSay('bjack');
+      bjRevealAndSettle();
+      return;
+    }
+
+    const btns = ['bj-hit-btn','bj-stand-btn'];
+    if (canDouble)  btns.push('bj-double-btn');
+    if (canSplit)   btns.push('bj-split-btn');
+    if (canInsure)  btns.push('bj-insure-btn');
+    bjShowBtns(btns);
+  }, 700);
+}
+
+/* ── 要牌 ── */
 function bjHit() {
-  if (bjState.gameOver) return;
-  bjState.playerCards.push(bjState.deck.pop());
-  bjSetLine(bjRandLine(bjState.charIdx, 'hit'));
-  bjRenderHands(true);
-  const score = bjHandScore(bjState.playerCards);
-  if (score > 21) {
-    bjSetLine(bjRandLine(bjState.charIdx, 'bust'));
-    bjEndGame('bust');
-  } else if (score === 21) {
-    bjStand();
-  }
+  const card = bjPop();
+  BJ.player.push(card);
+  bjAddCard('player', card);
+  document.getElementById('bj-player-score').textContent = bjScore(BJ.player);
+  bjSay('hit');
+
+  // 移除不再可用的按钮
+  document.getElementById('bj-double-btn')?.style && (document.getElementById('bj-double-btn').style.display = 'none');
+  document.getElementById('bj-split-btn')?.style  && (document.getElementById('bj-split-btn').style.display  = 'none');
+  document.getElementById('bj-insure-btn')?.style && (document.getElementById('bj-insure-btn').style.display = 'none');
+
+  const s = bjScore(BJ.player);
+  if (s > 21)      { bjSay('bust'); bjRevealAndSettle(); }
+  else if (s === 21) bjStand();
 }
 
+/* ── 停牌 ── */
 function bjStand() {
-  if (bjState.gameOver) return;
-  bjSetLine(bjRandLine(bjState.charIdx, 'stand'));
+  bjSay('stand');
+  bjShowBtns([]);
+  bjDealerPlay();
+}
 
-  // 庄家补牌到17
-  while (bjHandScore(bjState.dealerCards) < 17) {
-    bjState.dealerCards.push(bjState.deck.pop());
+/* ── 双倍 ── */
+function bjDouble() {
+  if (BJ.chips < BJ.bet) return;
+  BJ.chips -= BJ.bet;
+  BJ.bet   *= 2;
+  document.getElementById('bj-bet-val').textContent   = BJ.bet;
+  document.getElementById('bj-chips-val').textContent = BJ.chips;
+  bjSay('double');
+  const card = bjPop();
+  BJ.player.push(card);
+  bjAddCard('player', card);
+  setTimeout(() => {
+    document.getElementById('bj-player-score').textContent = bjScore(BJ.player);
+    bjRevealAndSettle();
+  }, 400);
+}
+
+/* ── 分牌 ── */
+function bjSplit() {
+  if (BJ.chips < BJ.bet) return;
+  BJ.chips    -= BJ.bet;
+  BJ.playerSplit = [BJ.player.pop()];
+  BJ.player.push(bjPop());
+  bjSay('split');
+  bjRender(true);
+  // 简化：分牌后各补一张牌，轮流继续
+  setTimeout(() => {
+    bjShowBtns(['bj-hit-btn','bj-stand-btn']);
+  }, 400);
+}
+
+/* ── 保险 ── */
+function bjInsure() {
+  const ins = Math.floor(BJ.bet / 2);
+  if (BJ.chips < ins) return;
+  BJ.chips    -= ins;
+  BJ.insureBet = ins;
+  BJ.insured   = true;
+  bjSay('insure');
+  document.getElementById('bj-insure-btn').style.display = 'none';
+  document.getElementById('bj-chips-val').textContent = BJ.chips;
+}
+
+/* ── 庄家补牌 ── */
+function bjDealerPlay() {
+  // 先翻庄家暗牌
+  const dh = document.getElementById('bj-dealer-hand');
+  const hiddenEl = dh.querySelector('.bj-card.back');
+  if (hiddenEl) bjFlipCard(hiddenEl, BJ.dealer[1]);
+  document.getElementById('bj-dealer-score').textContent = bjScore(BJ.dealer);
+
+  // 检查庄家有保险赔付
+  if (BJ.insured && BJ.dealer[1].val === 'A' && bjScore(BJ.dealer) === 21) {
+    BJ.chips += BJ.insureBet * 3; // 保险赔2:1
   }
-  bjRenderHands(false);
 
-  const ps = bjHandScore(bjState.playerCards);
-  const ds = bjHandScore(bjState.dealerCards);
+  function dealerStep() {
+    if (bjScore(BJ.dealer) < 17) {
+      const card = bjPop();
+      BJ.dealer.push(card);
+      bjAddCard('dealer', card);
+      document.getElementById('bj-dealer-score').textContent = bjScore(BJ.dealer);
+      setTimeout(dealerStep, 500);
+    } else {
+      setTimeout(bjSettle, 400);
+    }
+  }
+  setTimeout(dealerStep, 600);
+}
 
-  if (ds > 21 || ps > ds) {
-    setTimeout(() => bjSetLine(bjRandLine(bjState.charIdx, 'win')), 300);
-    bjEndGame('win');
+/* ── 亮牌结算（玩家21点或爆牌时直接结算） ── */
+function bjRevealAndSettle() {
+  bjShowBtns([]);
+  // 翻庄家暗牌
+  const dh = document.getElementById('bj-dealer-hand');
+  const hiddenEl = dh.querySelector('.bj-card.back');
+  if (hiddenEl) bjFlipCard(hiddenEl, BJ.dealer[1]);
+  setTimeout(() => {
+    document.getElementById('bj-dealer-score').textContent = bjScore(BJ.dealer);
+    bjSettle();
+  }, 500);
+}
+
+/* ── 判定输赢 ── */
+function bjSettle() {
+  const ps = bjScore(BJ.player);
+  const ds = bjScore(BJ.dealer);
+  const isBlackjack = BJ.player.length === 2 && ps === 21;
+
+  let outcome, payout;
+
+  if (ps > 21) {
+    outcome = 'bust'; payout = 0;
+  } else if (ds > 21 || ps > ds) {
+    if (isBlackjack) {
+      outcome = 'bjack'; payout = BJ.bet + Math.floor(BJ.bet * 1.5);
+    } else {
+      outcome = 'win';  payout = BJ.bet * 2;
+    }
   } else if (ps === ds) {
-    setTimeout(() => bjSetLine(bjRandLine(bjState.charIdx, 'push')), 300);
-    bjEndGame('push');
+    outcome = 'push'; payout = BJ.bet; // 退还下注
   } else {
-    setTimeout(() => bjSetLine(bjRandLine(bjState.charIdx, 'lose')), 300);
-    bjEndGame('lose');
+    outcome = 'lose'; payout = 0;
   }
-}
 
-function bjEndGame(outcome) {
-  bjState.gameOver = true;
-  document.getElementById('bj-actions').style.display = 'none';
-  document.getElementById('bj-restart').style.display = 'flex';
+  BJ.chips += payout;
+  BJ.phase = 'over';
 
-  const resultEl = document.getElementById('bj-result');
-  const msgs = {
-    win:       ['你赢了', 'YOU WIN'],
-    lose:      ['你输了', 'YOU LOSE'],
-    bust:      ['爆牌', 'BUST'],
-    push:      ['平局', 'PUSH'],
-    blackjack: ['21点！', 'BLACKJACK!'],
+  const labels = {
+    bust:  ['爆牌', 'BUST',       'lose'],
+    win:   ['你赢了','YOU WIN',   'win'],
+    bjack: ['21点！','BLACKJACK!','win'],
+    push:  ['平局', 'PUSH',       'push'],
+    lose:  ['你输了','YOU LOSE',  'lose'],
   };
-  const [cn, en] = msgs[outcome] || ['—','—'];
-  resultEl.textContent = `${cn}  ${en}`;
-  resultEl.className = 'bj-result ' +
-    (outcome === 'win' || outcome === 'blackjack' ? 'win' :
-     outcome === 'push' ? 'push' : 'lose');
+  const [cn, en, cls] = labels[outcome];
+  bjSetResult(`${cn}  ${en}`, cls);
+  bjSay(outcome === 'bust' ? 'bust' :
+        outcome === 'win' || outcome === 'bjack' ? 'win' :
+        outcome === 'push' ? 'push' : 'lose');
 
-  bjRenderHands(false);
+  document.getElementById('bj-chips-val').textContent = BJ.chips;
+  bjShowBtns(['bj-new-btn']);
 }
 
-// ESC 关闭
+/* ── ESC 关闭 ── */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     const bj = document.getElementById('bj-modal');
-    if (bj && bj.classList.contains('op')) { bjClose(); return; }
+    if (bj?.classList.contains('op')) { bjClose(); return; }
   }
 });
 
-// 两侧按钮根据角色存在与否显示/隐藏
+/* ── 按角色显隐游戏按钮 ── */
 function updateGameBtns() {
-  if (!curWorld) return;
-  const btn0 = document.getElementById('game-btn-0');
-  const btn1 = document.getElementById('game-btn-1');
-  if (btn0) btn0.style.display = curWorld.chars[0] ? 'flex' : 'none';
-  if (btn1) btn1.style.display = curWorld.chars[1] ? 'flex' : 'none';
+  const row = document.getElementById('game-entry-row');
+  if (!row || !curWorld) return;
+  const b0 = document.getElementById('game-btn-0');
+  const b1 = document.getElementById('game-btn-1');
+  if (b0) b0.style.display = curWorld.chars?.[0] ? '' : 'none';
+  if (b1) b1.style.display = curWorld.chars?.[1] ? '' : 'none';
+  // 如果两个都没有，隐藏整行
+  const anyVisible = (curWorld.chars?.[0] || curWorld.chars?.[1]);
+  row.style.display = anyVisible ? '' : 'none';
 }
