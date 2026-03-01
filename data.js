@@ -115,6 +115,8 @@ const WORLDS = [
       'images/酒吧门口2.JPG',
       'images/抱抱.JPEG',
       'images/家里.JPEG',
+      'images/仓师情人节.PNG',
+      'images/仓师熊.PNG',
     ],
 
     video: {
