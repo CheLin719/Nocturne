@@ -110,8 +110,8 @@ const WORLDS = [
     ],
 
     gallery: [
-      'images/酒吧门口.JPG', 
       'images/仓师情人节.PNG',
+      'images/酒吧门口.JPG',
       'images/仓师熊.JPG', 
       'images/抱抱.JPEG',
       'images/家里.JPEG',
