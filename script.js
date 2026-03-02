@@ -1068,10 +1068,14 @@ function bjSettle() {
 
 function updateGameBtns(){
   const b0=document.getElementById('game-btn-0'), b1=document.getElementById('game-btn-1');
-  // 21点游戏只在夜曲（w1）显示
-  const show = curWorld?.id === 'w1';
+  const outer=document.querySelector('.chat-outer');
+  if(!curWorld)return;
+  // 只在夜曲（w1）显示游戏入口
+  const show = curWorld.id === 'w1';
   if(b0)b0.style.display=(show && curWorld.chars?.[0])?'flex':'none';
   if(b1)b1.style.display=(show && curWorld.chars?.[1])?'flex':'none';
+  // has-game 控制两侧列是否占位
+  if(outer) outer.classList.toggle('has-game', show);
 }
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
