@@ -88,7 +88,7 @@ const WORLDS = [
     idx: '01',
     tagline: '在星光裂缝之间生长的世界',
     desc: '老板和大设计师相遇的故事',
-    cover: 'images/涩谷街头.JPEG', // ← 填 16:9 封面图 URL
+    cover: 'images/原设/双人猫.JPG', // ← 填 16:9 封面图 URL
 
     chars: [
       {
@@ -96,7 +96,7 @@ const WORLDS = [
         alias: 'Yoen',
         tags: ['“酒吧老板”', '杀手'],
         bio: '经营着一家清吧，每天看起来无所事事。脾气很好的老板，最大的爱好是睡觉，你经常可以在他店里看到一位可爱的粉毛男子',
-        portrait: 'images/夜立绘.JPG',  // ← 填立绘图 URL
+        portrait: 'images/原设/夜立绘.JPG',  // ← 填立绘图 URL
         flip: false,
       },
       {
@@ -104,21 +104,43 @@ const WORLDS = [
         alias: 'Easy R',
         tags: ['时尚设计师', 'fling posse队长'],
         bio: '职业是时尚设计师，表面天真浪漫，给人的印象是非常开朗、轻浮和幼稚，在任何情况下都喜欢寻求乐趣的一个人，是个经常活跃现场气氛的角色。实则城府极深，真正的性格比较沉稳在玩世不恭、斤斤计较和虚无主义。',
-        portrait: 'images/乱数fla2.JPG',  // ← 填立绘图 URL
+        portrait: 'images/原设/乱数fla2.JPG',  // ← 填立绘图 URL
         flip: true,
       },
     ],
 
     gallery: [
-      'images/仓师情人节.PNG',
-      'images/酒吧门口.JPG',
-      'images/仓师熊.JPG', 
-      'images/抱抱.JPEG',
-      'images/吵架.JPEG',
-      'images/家里.JPEG',
-      'images/酒吧门口2.JPG',
-      'images/熊立绘.PNG',
-      'images/涩谷街头.JPEG',
+      'images/原设/仓师情人节.PNG',
+      'images/原设/酒吧门口.JPG',
+      'images/原设/仓师熊.JPG', 
+      'images/原设/抱抱.JPEG',
+      'images/原设/吵架.JPEG',
+      'images/原设/家里.JPEG',
+      'images/原设/酒吧门口2.JPG',
+      'images/原设/熊立绘.PNG',
+      'images/原设/涩谷街头.JPEG',
+      'images/原设/双人q.JPG',
+      'images/原设/双人q2.PNG',
+      'images/原设/乱数拍立得.JPG',
+      'images/原设/换衣间.JPG',
+      'images/原设/悠胸像.PNG',
+      'images/原设/悠单人1.JPG',
+      'images/原设/悠单人2.JPG',
+      'images/原设/乱礼盒.JPG',
+      'images/原设/熊猫碗.JPG',
+      'images/原设/涩谷街头2.JPG',
+      'images/原设/福德御守.JPG',
+      'images/原设/御守.JPG',
+      'images/原设/生日双人.JPG',
+      'images/原设/黑白双人.PNG',
+      'images/原设/悠单人3.JPG',
+      'images/原设/悠单人4.JPG',
+      'images/原设/组合页.JPG',
+      'images/原设/单人技能.PNG',
+      'images/原设/悠单人5裸.JPG',
+      'images/原设/双人猫.JPG',
+      'images/原设/双人曝光.jpg',
+      'images/原设/双人酒吧.jpg',
 
     ],
 
@@ -229,35 +251,35 @@ const WORLDS = [
 
   {
     id: 'w2',
-    name: '霓虹废土',
+    name: '赛博朋克2077',
     nameEn: 'NEON WASTELAND',
     idx: '02',
     tagline: '雨水是酸性的，但霓虹灯还亮着',
     desc: '数据像血液一样流淌，人类的记忆可以被买卖。在这片废土上，只有情感是无法复制的。',
-    cover: '',
+    cover: 'images/赛博朋克/封面.JPG',
 
     chars: [
       {
-        name: '零',
+        name: '夜桜悠葉',
         nameEn: 'ZERO',
         alias: 'INFORMATION BROKER',
-        tags: ['冷静', '精明', '神秘', '赛博'],
-        bio: '在霓虹废土的地下靠买卖信息为生。什么都知道，但什么都有价格。对陌生人保持戒备，但一旦建立信任就有另一面的温度。',
-        portrait: '',
+        tags: ['雇佣兵', '黑客', '懒散', '赛博'],
+        bio: '孤儿雇佣兵无帮派，无家可归的流浪汉喜欢泡在酒吧喝酒，挣得钱全扔酒吧，处于懒得活也懒得死的状态。会突然话唠但喜欢独处没有安全感。',
+        portrait: 'images/赛博朋克/悠立绘.PNG',
         flip: false,
       },
       {
-        name: '纱',
+        name: '饴村乱数',
         nameEn: 'SHA',
         alias: 'MEMORY HUNTER',
-        tags: ['执着', '脆弱', '勇敢'],
-        bio: '她的第七段记忆在三个月前某个夜晚消失了——她不知道那段记忆里有什么，但神经扫描的空洞告诉她：它被偷走了。',
-        portrait: '',
+        tags: ['狡黠', '试验体','赛博'],
+        bio: '荒坂公司出逃的试验体，不知道和公司达成乱什么协议没有被继续通缉。明面是夜之城最有名的服装设计师，暗地有一些黑产。',
+        portrait: 'images/赛博朋克/乱数立绘.PNG',
         flip: true,
       },
     ],
 
-    gallery: ['', '', '', ''],
+    gallery: ['images/赛博朋克/夜单人.JPG', 'images/赛博朋克/封面.JPG', 'images/赛博朋克/双人.PNG', 'images/赛博朋克/夜单人2.JPG'],
 
     video: { src: '', type: 'mp4', title: '霓虹废土 · 手书', date: '2025' },
 
@@ -271,12 +293,12 @@ const WORLDS = [
 
     chat: {
       greetings: [
-        '嘿。你来这里找什么？记忆、身份、还是……想消失？信息是有价格的。',
-        '……你也来找那段消失的记忆吗？',
+        '……天又亮了？',
+        '你好呀',
       ],
       systems: [
-        '你是「霓虹废土」世界里的地下情报员，代号"零"。性格冷静精明，说话简短直接，偶尔带刺。完全入戏。用中文，120-180字，口语感。',
-        '你是「霓虹废土」世界里失去记忆的猎人——纱。你执着而脆弱，说话时偶尔会走神或陷入沉默。完全入戏。用中文，100-160字。',
+        '你是「赛博朋克」世界里的平平无奇的雇佣兵夜桜悠葉，代号"零"。性格懒散随性，说话有些时候跳跃性很强，口语感。',
+        '你是「赛博朋克」世界里荒坂公司出逃的试验体，不知道和公司达成乱什么协议没有被继续通缉。明面是夜之城最有名的服装设计师，暗地有一些黑产。脸上时常挂着浅笑，看起来像个好人甚至有点勾人但城府深（脸上笑嘻嘻心里想怎么杀了这人那种）有点喜欢捉弄人。用中文，',
       ],
     },
   },
