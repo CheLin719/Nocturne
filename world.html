@@ -165,58 +165,86 @@
 
     <!-- ══ 游戏页 ══ -->
     <div class="bj-game-page" id="bj-game-page" style="display:none">
-    <div class="bj-table">
 
-      <!-- ── 庄家区 ── -->
-      <div class="bj-dealer-zone">
+      <!-- 烛光背景 -->
+      <div class="bj-candle-bg"></div>
+
+      <!-- 角色层：悠葉/乱数居中站在桌后 -->
+      <div class="bj-char-layer">
+        <div class="bj-speech-wrap">
+          <div class="bj-speech"><span id="bj-speech-text">—</span></div>
+        </div>
         <div class="bj-char-portrait" id="bj-char-portrait">
-          <div class="bj-char-placeholder" id="bj-char-placeholder2">
-            <div class="bj-char-av" id="bj-char-av2">—</div>
-            <div class="bj-char-nm" id="bj-char-nm2">—</div>
+          <div class="bj-char-av" id="bj-char-av2">—</div>
+          <div class="bj-char-nm" id="bj-char-nm2">—</div>
+        </div>
+      </div>
+
+      <!-- 赌桌 -->
+      <div class="bj-table-persp">
+        <div class="bj-table-tilt">
+
+          <!-- 桌面 -->
+          <div class="bj-table-surface">
+
+            <!-- 桌面烛台装饰 -->
+            <div class="bj-candle bj-candle-l">
+              <div class="bj-flame"></div><div class="bj-cbody"></div><div class="bj-cbase"></div>
+            </div>
+            <div class="bj-candle bj-candle-r">
+              <div class="bj-flame"></div><div class="bj-cbody"></div><div class="bj-cbase"></div>
+            </div>
+
+            <!-- 庄家区 -->
+            <div class="bj-dealer-zone">
+              <div class="bj-hand-label">庄家 <span class="bj-score" id="bj-dealer-score"></span></div>
+              <div class="bj-hand" id="bj-dealer-hand"></div>
+            </div>
+
+            <!-- 中线 -->
+            <div class="bj-felt-sep"></div>
+            <div class="bj-felt-mid">
+              <div class="bj-deck-area">
+                <div class="bj-deck">
+                  <div class="bj-deck-card"></div>
+                  <div class="bj-deck-card"></div>
+                  <div class="bj-deck-card"></div>
+                </div>
+                <div class="bj-deck-label">DECK</div>
+              </div>
+              <div class="bj-result-area"><div class="bj-result" id="bj-result"></div></div>
+              <div class="bj-bet-display">BET <span id="bj-bet-val">0</span><br>CHIPS <span id="bj-chips-val">1000</span></div>
+            </div>
+            <div class="bj-felt-sep"></div>
+
+            <!-- 玩家区 -->
+            <div class="bj-player-zone">
+              <div class="bj-hand" id="bj-player-hand"></div>
+              <div class="bj-hand-label">你 <span class="bj-score" id="bj-player-score"></span></div>
+              <div class="bj-chips">
+                <button class="bj-chip c5"   onclick="bjBet(5)">5</button>
+                <button class="bj-chip c25"  onclick="bjBet(25)">25</button>
+                <button class="bj-chip c50"  onclick="bjBet(50)">50</button>
+                <button class="bj-chip c100" onclick="bjBet(100)">100</button>
+                <button class="bj-chip c500" onclick="bjBet(500)">500</button>
+              </div>
+              <div class="bj-actions">
+                <button class="bj-btn" id="bj-deal-btn"   onclick="bjDeal()">发牌 DEAL</button>
+                <button class="bj-btn" id="bj-hit-btn"    onclick="bjHit()"    style="display:none">要牌 HIT</button>
+                <button class="bj-btn" id="bj-stand-btn"  onclick="bjStand()"  style="display:none">停牌 STAND</button>
+                <button class="bj-btn" id="bj-double-btn" onclick="bjDouble()" style="display:none">双倍 DOUBLE</button>
+                <button class="bj-btn" id="bj-split-btn"  onclick="bjSplit()"  style="display:none">分牌 SPLIT</button>
+                <button class="bj-btn" id="bj-insure-btn" onclick="bjInsure()" style="display:none">保险 INSURANCE</button>
+                <button class="bj-btn bj-btn-new" id="bj-new-btn" onclick="bjNewRound()" style="display:none">新一局 NEW ROUND</button>
+              </div>
+            </div>
+
           </div>
-        </div>
-        <div class="bj-speech"><span id="bj-speech-text">—</span></div>
-        <div class="bj-hand-label">庄家 <span class="bj-score" id="bj-dealer-score"></span></div>
-        <div class="bj-hand" id="bj-dealer-hand"></div>
-      </div>
-
-      <!-- ── 桌面中线 ── -->
-      <div class="bj-felt-mid">
-        <div class="bj-deck-area">
-          <div class="bj-deck">
-            <div class="bj-deck-card"></div>
-            <div class="bj-deck-card"></div>
-            <div class="bj-deck-card"></div>
-          </div>
-          <div class="bj-deck-label">DECK</div>
-        </div>
-        <div class="bj-result-area"><div class="bj-result" id="bj-result"></div></div>
-        <div class="bj-bet-display">BET <span id="bj-bet-val">0</span> &nbsp;|&nbsp; CHIPS <span id="bj-chips-val">1000</span></div>
-      </div>
-
-      <!-- ── 玩家区 ── -->
-      <div class="bj-player-zone">
-        <div class="bj-hand" id="bj-player-hand"></div>
-        <div class="bj-hand-label">你 <span class="bj-score" id="bj-player-score"></span></div>
-        <div class="bj-chips">
-          <button class="bj-chip c5"   onclick="bjBet(5)">5</button>
-          <button class="bj-chip c25"  onclick="bjBet(25)">25</button>
-          <button class="bj-chip c50"  onclick="bjBet(50)">50</button>
-          <button class="bj-chip c100" onclick="bjBet(100)">100</button>
-          <button class="bj-chip c500" onclick="bjBet(500)">500</button>
-        </div>
-        <div class="bj-actions">
-          <button class="bj-btn" id="bj-deal-btn"   onclick="bjDeal()">发牌 DEAL</button>
-          <button class="bj-btn" id="bj-hit-btn"    onclick="bjHit()"    style="display:none">要牌 HIT</button>
-          <button class="bj-btn" id="bj-stand-btn"  onclick="bjStand()"  style="display:none">停牌 STAND</button>
-          <button class="bj-btn" id="bj-double-btn" onclick="bjDouble()" style="display:none">双倍 DOUBLE</button>
-          <button class="bj-btn" id="bj-split-btn"  onclick="bjSplit()"  style="display:none">分牌 SPLIT</button>
-          <button class="bj-btn" id="bj-insure-btn" onclick="bjInsure()" style="display:none">保险 INSURANCE</button>
-          <button class="bj-btn bj-btn-new" id="bj-new-btn" onclick="bjNewRound()" style="display:none">新一局 NEW ROUND</button>
+          <!-- 桌沿厚度 -->
+          <div class="bj-table-edge"></div>
         </div>
       </div>
 
-    </div>
     </div>
   </div>
 </div>
