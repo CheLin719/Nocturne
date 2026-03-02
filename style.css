@@ -575,14 +575,7 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
 }
 
 /* 烛光背景层 */
-.bj-candle-bg{
-  position:absolute;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(ellipse 50% 30% at 15% 95%, rgba(255,150,30,.45) 0%, transparent 55%),
-    radial-gradient(ellipse 45% 28% at 85% 92%, rgba(255,120,20,.28) 0%, transparent 52%),
-    radial-gradient(ellipse 80% 40% at 50% 115%, rgba(4,12,6,.98) 0%, transparent 60%);
-  animation:bjCandleF 5s ease-in-out infinite alternate;
-}
+
 @keyframes bjCandleF{0%,100%{opacity:1;}45%{opacity:.88;}75%{opacity:.95;}}
 
 /* ── 角色层 ── */
@@ -693,6 +686,7 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
   top:0;left:20%;right:20%;height:1px;
   background:linear-gradient(90deg,transparent,rgba(200,169,110,.25),transparent);
 }
+
 
 /* ── 桌面区域 ── */
 .bj-dealer-zone{
