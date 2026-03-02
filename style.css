@@ -590,8 +590,8 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
   position:relative;z-index:2;
   flex:0 0 auto;
   display:flex;flex-direction:column;align-items:center;
-  padding-top:12px;
-  margin-bottom:-16px;
+  padding-top:8px;
+  margin-bottom:-12px;
 }
 .bj-speech-wrap{margin-bottom:6px;}
 .bj-speech{
@@ -610,7 +610,7 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
   color:rgba(255,255,255,.8);letter-spacing:.05em;
 }
 .bj-char-portrait{
-  width:160px;height:230px;
+  width:120px;height:160px;
   display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;
 }
 .bj-char-portrait img{
@@ -632,35 +632,33 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
   color:rgba(200,169,110,.4);
 }
 
-/* ── 赌桌透视容器 ── */
+/* ── 赌桌容器（平面布局，椭圆桌沿靠box-shadow模拟）── */
 .bj-table-persp{
   flex:1;
-  perspective:800px;
-  perspective-origin:50% -20px;
   position:relative;z-index:3;
-  display:flex;flex-direction:column;justify-content:flex-end;
-  padding-bottom:0;
+  display:flex;flex-direction:column;
+  overflow:visible;
 }
 .bj-table-tilt{
-  transform:rotateX(26deg);
-  transform-origin:50% 0%;
+  flex:1;display:flex;flex-direction:column;
 }
 
 /* 桌面主体 */
 .bj-table-surface{
+  flex:1;
   position:relative;
-  border-radius:120px / 38px;
-  padding:20px 32px 28px;
+  /* 上方椭圆弧：用border-radius营造弧形顶边 */
+  border-radius:60% 60% 0 0 / 18% 18% 0 0;
+  padding:18px 32px 24px;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 40%,#1e5030 0%,#163a22 35%,#0d2418 65%,#071510 100%);
+    radial-gradient(ellipse 90% 70% at 50% 30%,#1e5030 0%,#163a22 40%,#0d2418 70%,#071510 100%);
   box-shadow:
-    0 0 0 1px #1a0c03,
-    0 0 0 2.5px #7a6340,
-    0 0 0 4px #0f0700,
-    0 0 0 5.5px rgba(200,169,110,.15),
-    0 8px 50px rgba(0,0,0,.9),
-    inset 0 8px 30px rgba(0,0,0,.5),
-    inset 0 0 60px rgba(0,0,0,.3);
+    0 -1px 0 0 #1a0c03,
+    0 -2px 0 0 #7a6340,
+    0 -4px 0 0 #0f0700,
+    0 -5px 0 0 rgba(200,169,110,.18),
+    inset 0 6px 30px rgba(0,0,0,.4),
+    inset 0 0 60px rgba(0,0,0,.25);
 }
 /* 毡布纹理 */
 .bj-table-surface::before{
@@ -677,19 +675,19 @@ button{cursor:pointer;font-family:inherit;border:none;background:none;}
 
 /* 桌沿厚度 */
 .bj-table-edge{
-  height:24px;
+  height:20px;
   background:linear-gradient(180deg,#2e1a06 0%,#1a0e03 50%,#110901 100%);
-  border-radius:0 0 120px 120px / 0 0 20px 20px;
+  border-radius:0 0 60% 60% / 0 0 100% 100%;
   box-shadow:
     0 0 0 1px #7a6340,
-    0 12px 40px rgba(0,0,0,.98),
+    0 8px 30px rgba(0,0,0,.95),
     inset 0 1px 0 rgba(200,169,110,.1);
-  position:relative;margin-top:-2px;
+  position:relative;
 }
 .bj-table-edge::before{
   content:'';position:absolute;
   top:0;left:20%;right:20%;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(200,169,110,.25),transparent);
+  background:linear-gradient(90deg,transparent,rgba(200,169,110,.28),transparent);
 }
 
 
