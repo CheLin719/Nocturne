@@ -23,7 +23,7 @@
                常用：'gemini-1.5-flash' / 'gpt-4o' / 'claude-3-5-sonnet-20241022'
    ══════════════════════════════════════════════════════════════════ */
 const API_PROXY = 'https://api2.qiandao.mom'; // ← 你的反代地址
-const API_KEY   = 'sk-1SPlyIOlaHzygz12mPUSccGt4ABAi9c3qBRP62ehHXHN7MDW';                           // ← 填你的 sk- key
+const API_KEY   = '';                           // ← 填你的 sk- key
 const API_MODEL = '[千岛]gemini-3-flash-preview';           // ← 填你选的模型名
 
 
